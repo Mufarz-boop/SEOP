@@ -1,0 +1,286 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Data Organisasi - SEOP{% endblock %}
+{% block page_title %}Data Organisasi{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <p class="text-muted mb-0">Kelola data organisasi sekolah</p>
+    </div>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambah">
+        <i class="bi bi-plus-lg me-2"></i>Tambah Organisasi
+    </button>
+</div>
+
+<div class="table-container">
+    <div class="table-responsive">
+        <table class="table" id="dataTable">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Nama</th>
+                    <th>Pembina</th>
+                    <th>Ketua</th>
+                    <th>Jadwal Rapat</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for org in organizations %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td><strong>{{ org.name }}</strong></td>
+                    <td>{{ org.supervisor_name or '-' }}</td>
+                    <td>{{ org.president_name or '-' }}</td>
+                    <td>
+                        {% if org.meeting_day and org.meeting_time %}
+                            {{ org.meeting_day }}, {{ org.meeting_time }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge status-{{ org.status }}">
+                            {{ org.status|upper }}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#modalDetail{{ org.organization_id }}">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalEdit{{ org.organization_id }}">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#modalHapus{{ org.organization_id }}">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                        Belum ada data organisasi
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Tambah -->
+<div class="modal fade" id="modalTambah" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Tambah Organisasi Baru</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('admin.tambah_organisasi') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nama Organisasi <span class="text-danger">*</span></label>
+                        <input type="text" name="name" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Deskripsi</label>
+                        <textarea name="description" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Pembina</label>
+                        <select name="supervisor_teacher_id" class="form-select">
+                            <option value="">Pilih Pembina</option>
+                            {% for teacher in teachers %}
+                            <option value="{{ teacher.teacher_id }}">{{ teacher.full_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Ketua (Murid)</label>
+                        <select name="president_student_id" class="form-select">
+                            <option value="">Pilih Ketua</option>
+                            {% for student in students %}
+                            <option value="{{ student.student_id }}">{{ student.full_name }} ({{ student.nis }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Hari Rapat</label>
+                            <select name="meeting_day" class="form-select">
+                                <option value="">Pilih Hari</option>
+                                <option value="Sunday">Minggu</option>
+                                <option value="Monday">Senin</option>
+                                <option value="Tuesday">Selasa</option>
+                                <option value="Wednesday">Rabu</option>
+                                <option value="Thursday">Kamis</option>
+                                <option value="Friday">Jumat</option>
+                                <option value="Saturday">Sabtu</option>
+                                <option value="Allday">Setiap Hari</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Jam Rapat</label>
+                            <input type="time" name="meeting_time" class="form-control">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Lokasi</label>
+                        <input type="text" name="location" class="form-control" placeholder="Contoh: Ruang OSIS">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modals for each organization -->
+{% for org in organizations %}
+<!-- Modal Detail -->
+<div class="modal fade" id="modalDetail{{ org.organization_id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detail Organisasi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h5 class="mb-3">{{ org.name }}</h5>
+                <table class="table table-borderless">
+                    <tr>
+                        <td width="40%"><strong>Pembina</strong></td>
+                        <td>{{ org.supervisor_name or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Ketua</strong></td>
+                        <td>{{ org.president_name or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Jadwal Rapat</strong></td>
+                        <td>{{ org.meeting_day or '-' }} {{ org.meeting_time or '' }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Lokasi</strong></td>
+                        <td>{{ org.location or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Status</strong></td>
+                        <td><span class="badge status-{{ org.status }}">{{ org.status|upper }}</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Deskripsi</strong></td>
+                        <td>{{ org.description or '-' }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Edit -->
+<div class="modal fade" id="modalEdit{{ org.organization_id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Organisasi</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('admin.edit_organisasi', organization_id=org.organization_id) }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nama Organisasi</label>
+                        <input type="text" name="name" class="form-control" value="{{ org.name }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Deskripsi</label>
+                        <textarea name="description" class="form-control" rows="3">{{ org.description or '' }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Pembina</label>
+                        <select name="supervisor_teacher_id" class="form-select">
+                            <option value="">Pilih Pembina</option>
+                            {% for teacher in teachers %}
+                            <option value="{{ teacher.teacher_id }}" {% if org.supervisor_teacher_id == teacher.teacher_id %}selected{% endif %}>{{ teacher.full_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Ketua (Murid)</label>
+                        <select name="president_student_id" class="form-select">
+                            <option value="">Pilih Ketua</option>
+                            {% for student in students %}
+                            <option value="{{ student.student_id }}" {% if org.president_student_id == student.student_id %}selected{% endif %}>{{ student.full_name }} ({{ student.nis }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Hari Rapat</label>
+                            <select name="meeting_day" class="form-select">
+                                <option value="">Pilih Hari</option>
+                                <option value="Sunday" {% if org.meeting_day == 'Sunday' %}selected{% endif %}>Minggu</option>
+                                <option value="Monday" {% if org.meeting_day == 'Monday' %}selected{% endif %}>Senin</option>
+                                <option value="Tuesday" {% if org.meeting_day == 'Tuesday' %}selected{% endif %}>Selasa</option>
+                                <option value="Wednesday" {% if org.meeting_day == 'Wednesday' %}selected{% endif %}>Rabu</option>
+                                <option value="Thursday" {% if org.meeting_day == 'Thursday' %}selected{% endif %}>Kamis</option>
+                                <option value="Friday" {% if org.meeting_day == 'Friday' %}selected{% endif %}>Jumat</option>
+                                <option value="Saturday" {% if org.meeting_day == 'Saturday' %}selected{% endif %}>Sabtu</option>
+                                <option value="Allday" {% if org.meeting_day == 'Allday' %}selected{% endif %}>Setiap Hari</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Jam Rapat</label>
+                            <input type="time" name="meeting_time" class="form-control" value="{{ org.meeting_time }}">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Lokasi</label>
+                        <input type="text" name="location" class="form-control" value="{{ org.location or '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <select name="status" class="form-select">
+                            <option value="active" {% if org.status == 'active' %}selected{% endif %}>Aktif</option>
+                            <option value="inactive" {% if org.status == 'inactive' %}selected{% endif %}>Tidak Aktif</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Hapus -->
+<div class="modal fade" id="modalHapus{{ org.organization_id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Konfirmasi Hapus</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Apakah Anda yakin ingin menghapus data organisasi <strong>{{ org.name }}</strong>?</p>
+                <p class="text-danger"><small>Tindakan ini tidak dapat dibatalkan.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <form method="POST" action="{{ url_for('admin.hapus_organisasi', organization_id=org.organization_id) }}" class="d-inline">
+                    <button type="submit" class="btn btn-danger">Hapus</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - SEOP</title>
+    
+    <!-- FAVICON - Multi Platform Support -->
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🌲</text></svg>">
+    <link rel="alternate icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%230f5132'/><text x='50' y='65' text-anchor='middle' font-size='50' fill='white'>🌿</text></svg>">
+    
+    <!-- Bootstrap & Icons -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            /* SEOP Modern Palette */
+            --forest: #0f5132;
+            --pine: #15803d;
+            --leaf: #22c55e;
+            --mint: #86efac;
+            --sage: #dcfce7;
+            --cream: #f0fdf4;
+            
+            /* Neutrals */
+            --slate-50: #f8fafc;
+            --slate-100: #f1f5f9;
+            --slate-200: #e2e8f0;
+            --slate-400: #94a3b8;
+            --slate-600: #475569;
+            --slate-800: #1e293b;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: 
+                linear-gradient(135deg, rgba(15, 81, 50, 0.9) 0%, rgba(21, 128, 61, 0.95) 100%),
+                url('https://images.unsplash.com/photo-1541339907198-e08756dedf3f?w=1920&q=80') no-repeat center center fixed;
+            background-size: cover;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        /* LOADING OVERLAY */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, var(--forest) 0%, var(--pine) 100%);
+            z-index: 10000;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .loading-overlay.show {
+            opacity: 1;
+            visibility: visible;
+        }
+
+        .loading-content {
+            text-align: center;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Tree Icon Animation */
+        .loading-icon-wrapper {
+            width: 100px;
+            height: 100px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 3px solid rgba(255, 255, 255, 0.3);
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+            position: relative;
+            backdrop-filter: blur(10px);
+            animation: logoPulse 1.5s ease-in-out infinite;
+        }
+
+        .loading-icon {
+            font-size: 3rem;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.2));
+        }
+
+        @keyframes logoPulse {
+            0%, 100% { 
+                transform: scale(1);
+                box-shadow: 0 0 0 0 rgba(134, 239, 172, 0.4);
+            }
+            50% { 
+                transform: scale(1.05);
+                box-shadow: 0 0 0 20px rgba(134, 239, 172, 0);
+            }
+        }
+
+        /* Spinner Ring */
+        .loading-spinner {
+            position: absolute;
+            inset: -10px;
+            border: 2px solid transparent;
+            border-top-color: var(--mint);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            font-size: 1.25rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+            letter-spacing: -0.01em;
+        }
+
+        .loading-subtext {
+            font-size: 0.875rem;
+            color: rgba(255, 255, 255, 0.75);
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
+
+        /* Dots Animation */
+        .loading-dots {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 20px;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            background: var(--mint);
+            border-radius: 50%;
+            animation: dotBounce 1.4s ease-in-out infinite both;
+        }
+
+        .dot:nth-child(1) { animation-delay: -0.32s; }
+        .dot:nth-child(2) { animation-delay: -0.16s; }
+
+        @keyframes dotBounce {
+            0%, 80%, 100% { transform: scale(0); opacity: 0.5; }
+            40% { transform: scale(1); opacity: 1; }
+        }
+
+        /* Progress Bar */
+        .loading-progress {
+            width: 180px;
+            height: 3px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 2px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .loading-progress-bar {
+            height: 100%;
+            width: 0%;
+            background: linear-gradient(90deg, var(--mint), white);
+            border-radius: 2px;
+            animation: progressLoad 2s ease-in-out infinite;
+        }
+
+        @keyframes progressLoad {
+            0% { width: 0%; left: 0; }
+            50% { width: 100%; left: 0; }
+            100% { width: 0%; left: 100%; }
+        }
+
+        /* POPUP MESSAGE */
+        .popup-message {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-150%);
+            background: white;
+            padding: 14px 20px;
+            border-radius: 14px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            z-index: 9999;
+            min-width: 300px;
+            max-width: 90%;
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+            border-left: 3px solid var(--leaf);
+        }
+
+        .popup-message.show {
+            opacity: 1;
+            transform: translateX(-50%) translateY(0);
+        }
+
+        .popup-message.error {
+            border-left-color: #ef4444;
+        }
+
+        .popup-message.error .popup-icon {
+            color: #ef4444;
+            background: #fef2f2;
+        }
+
+        .popup-icon {
+            width: 32px;
+            height: 32px;
+            background: var(--sage);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--pine);
+            font-size: 1rem;
+            flex-shrink: 0;
+        }
+
+        .popup-text {
+            flex: 1;
+            font-size: 0.9rem;
+            color: var(--slate-800);
+            font-weight: 600;
+            line-height: 1.4;
+        }
+
+        .popup-close {
+            width: 26px;
+            height: 26px;
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--slate-400);
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-size: 0.9rem;
+        }
+
+        .popup-close:hover {
+            background: var(--slate-100);
+            color: var(--slate-800);
+        }
+
+        /* Main Container */
+        .login-container {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 
+                0 25px 80px -20px rgba(0, 0, 0, 0.4),
+                0 0 0 1px rgba(255, 255, 255, 0.1);
+            overflow: hidden;
+            width: 100%;
+            max-width: 880px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            min-height: 500px;
+            animation: containerSlide 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes containerSlide {
+            0% {
+                opacity: 0;
+                transform: translateY(20px) scale(0.98);
+            }
+            100% {
+                opacity: 1;
+                transform: translateY(0) scale(1);
+            }
+        }
+
+        /* Left Side - Branding */
+        .login-branding {
+            background: linear-gradient(135deg, var(--forest) 0%, var(--pine) 100%);
+            color: white;
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-branding::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(134, 239, 172, 0.2) 0%, transparent 70%);
+            animation: pulse 4s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); opacity: 0.3; }
+            50% { transform: scale(1.1); opacity: 0.6; }
+        }
+
+        .brand-logo {
+            position: relative;
+            width: 90px;
+            height: 90px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 255, 255, 0.3);
+            border-radius: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 24px;
+            backdrop-filter: blur(10px);
+            animation: float 3s ease-in-out infinite;
+            z-index: 1;
+        }
+
+        .brand-logo-icon {
+            font-size: 2.8rem;
+            filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-6px); }
+        }
+
+        .brand-logo::before {
+            content: '';
+            position: absolute;
+            inset: -6px;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 28px;
+            animation: rotate 15s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .brand-title {
+            font-size: 2.25rem;
+            font-weight: 800;
+            margin-bottom: 8px;
+            letter-spacing: -0.02em;
+            position: relative;
+            z-index: 1;
+        }
+
+        .brand-subtitle {
+            font-size: 0.95rem;
+            color: rgba(255, 255, 255, 0.85);
+            font-weight: 500;
+            margin-bottom: 28px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .brand-features {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.85rem;
+            color: rgba(255, 255, 255, 0.8);
+        }
+
+        .feature-item i {
+            width: 24px;
+            height: 24px;
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            color: var(--mint);
+        }
+
+        /* Right Side - Form */
+        .login-form-section {
+            padding: 40px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            background: white;
+        }
+
+        .form-header {
+            margin-bottom: 24px;
+        }
+
+        .form-header h2 {
+            font-size: 1.35rem;
+            font-weight: 700;
+            color: var(--slate-800);
+            margin-bottom: 4px;
+        }
+
+        .form-header p {
+            color: var(--slate-400);
+            font-size: 0.875rem;
+            margin: 0;
+        }
+
+        /* Compact Form */
+        .form-floating {
+            margin-bottom: 14px;
+            position: relative;
+        }
+
+        .form-floating .form-control {
+            border-radius: 12px;
+            border: 2px solid var(--slate-100);
+            background: var(--slate-50);
+            height: 52px;
+            font-size: 0.9rem;
+            padding-left: 16px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .form-floating .form-control:hover {
+            border-color: var(--mint);
+            background: white;
+        }
+
+        .form-floating .form-control:focus {
+            border-color: var(--leaf);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(34, 197, 94, 0.1);
+            transform: translateY(-1px);
+        }
+
+        .form-floating label {
+            color: var(--slate-400);
+            font-weight: 500;
+            padding-left: 16px;
+            font-size: 0.85rem;
+        }
+
+        .form-floating > .form-control:focus ~ label,
+        .form-floating > .form-control:not(:placeholder-shown) ~ label {
+            color: var(--pine);
+            font-weight: 600;
+            transform: translateY(-6px) scale(0.85);
+        }
+
+        .input-icon {
+            position: absolute;
+            right: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--slate-400);
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            z-index: 10;
+        }
+
+        .form-floating .form-control:focus ~ .input-icon {
+            color: var(--leaf);
+            transform: translateY(-50%) scale(1.05);
+        }
+
+        /* Button */
+        .btn-login {
+            background: linear-gradient(135deg, var(--forest) 0%, var(--pine) 100%);
+            border: none;
+            border-radius: 12px;
+            padding: 14px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            width: 100%;
+            color: white;
+            margin-top: 6px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-login::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-login:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(21, 128, 61, 0.3);
+        }
+
+        .btn-login:hover::before {
+            left: 100%;
+        }
+
+        .btn-login:active {
+            transform: translateY(0);
+        }
+
+        /* Button Loading State */
+        .btn-login.loading {
+            pointer-events: none;
+            opacity: 0.8;
+        }
+
+        .btn-login.loading i {
+            animation: spin 1s linear infinite;
+        }
+
+        /* Footer Links */
+        .form-footer {
+            margin-top: 24px;
+            padding-top: 20px;
+            border-top: 1px solid var(--slate-100);
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            align-items: stretch;
+            gap: 12px;
+        }
+
+        .footer-box {
+            flex: 1;
+            background: var(--slate-50);
+            border: 2px solid var(--slate-100);
+            border-radius: 12px;
+            padding: 12px 16px;
+            text-decoration: none;
+            color: var(--slate-600);
+            font-size: 0.8rem;
+            font-weight: 600;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            line-height: 1.3;
+            white-space: nowrap;
+        }
+
+        .footer-box:hover {
+            background: var(--sage);
+            border-color: var(--mint);
+            color: var(--forest);
+            transform: translateY(-2px);
+        }
+
+        .footer-box i {
+            margin-right: 6px;
+            font-size: 0.9rem;
+        }
+
+        .copyright-text {
+            color: var(--slate-400);
+            font-size: 0.75rem;
+            font-weight: 500;
+            text-align: center;
+            margin-top: 16px;
+            display: block;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .login-container {
+                grid-template-columns: 1fr;
+                max-width: 400px;
+            }
+
+            .login-branding {
+                padding: 32px 24px;
+                min-height: 240px;
+            }
+
+            .brand-logo {
+                width: 70px;
+                height: 70px;
+                margin-bottom: 16px;
+            }
+
+            .brand-logo-icon {
+                font-size: 2.2rem;
+            }
+
+            .brand-title {
+                font-size: 1.75rem;
+            }
+
+            .brand-subtitle {
+                font-size: 0.875rem;
+                margin-bottom: 20px;
+            }
+
+            .brand-features {
+                display: none;
+            }
+
+            .login-form-section {
+                padding: 28px 24px;
+            }
+
+            .form-header h2 {
+                font-size: 1.25rem;
+            }
+
+            .popup-message {
+                min-width: auto;
+                width: calc(100% - 32px);
+                padding: 12px 16px;
+            }
+
+            .loading-icon-wrapper {
+                width: 85px;
+                height: 85px;
+            }
+
+            .loading-icon {
+                font-size: 2.5rem;
+            }
+
+            .loading-text {
+                font-size: 1.1rem;
+            }
+
+            .loading-subtext {
+                font-size: 0.8rem;
+            }
+
+            .footer-links {
+                flex-direction: column;
+                gap: 10px;
+            }
+
+            .footer-box {
+                width: 100%;
+                white-space: normal;
+                padding: 10px 14px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 12px;
+                background: linear-gradient(135deg, rgba(15, 81, 50, 0.95) 0%, rgba(21, 128, 61, 0.98) 100%);
+            }
+
+            .login-container {
+                border-radius: 20px;
+                box-shadow: 0 10px 40px -10px rgba(0, 0, 0, 0.3);
+            }
+
+            .popup-message {
+                left: 16px;
+                right: 16px;
+                transform: translateY(-150%);
+                width: auto;
+            }
+
+            .popup-message.show {
+                transform: translateY(0);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- LOADING OVERLAY -->
+    <div id="loadingOverlay" class="loading-overlay">
+        <div class="loading-content">
+            <div class="loading-icon-wrapper">
+                <!-- ICON UTAMA DISINI - Bisa ganti emoji atau icon -->
+                <span class="loading-icon">🌲</span>
+                <div class="loading-spinner"></div>
+            </div>
+            <div class="loading-text">Memuat</div>
+            <div class="loading-subtext">Sedang memverifikasi data anda...</div>
+            <div class="loading-dots">
+                <div class="dot"></div>
+                <div class="dot"></div>
+                <div class="dot"></div>
+            </div>
+            <div class="loading-progress">
+                <div class="loading-progress-bar"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- POPUP MESSAGE -->
+    <div id="popupMsg" class="popup-message">
+        <div class="popup-icon">
+            <i class="bi bi-check-lg"></i>
+        </div>
+        <span class="popup-text" id="popupText">Message here</span>
+        <div class="popup-close" id="popupClose">
+            <i class="bi bi-x-lg"></i>
+        </div>
+    </div>
+
+    <div class="login-container">
+        <!-- Left Side - Branding -->
+        <div class="login-branding">
+            <div class="brand-logo">
+                <!-- ICON BRANDING DISINI -->
+                <span class="brand-logo-icon">🌿</span>
+            </div>
+            <h1 class="brand-title">SEOP</h1>
+            <p class="brand-subtitle">School Environment Order Program</p>
+            
+            <div class="brand-features">
+                <div class="feature-item" style="flex-direction: column; align-items: center; text-align: center; gap: 8px;">
+                    <i class="bi bi-quote" style="font-size: 1.2rem; color: var(--mint);"></i>
+                    <span style="font-style: italic; font-size: 0.9rem; line-height: 1.5; color: rgba(255, 255, 255, 0.95);">
+                        "We do not inherit the earth from our ancestors, we borrow it from our children."
+                    </span>
+                    <span style="font-size: 0.75rem; color: rgba(255, 255, 255, 0.6); font-weight: 500;">
+                        — Native American Proverb
+                    </span>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Right Side - Form -->
+        <div class="login-form-section">
+            <div class="form-header">
+                <h2>Selamat Datang</h2>
+                <p>Silakan masuk untuk melanjutkan</p>
+            </div>
+            
+            <form id="loginForm" method="POST" action="{{ url_for('auth.login') }}">
+                <div class="form-floating position-relative">
+                    <input type="text" class="form-control" id="register_number" name="register_number" 
+                           placeholder="Nomor Registrasi" required>
+                    <label for="register_number">Nomor Registrasi</label>
+                    <i class="bi bi-person-badge input-icon"></i>
+                </div>
+                
+                <div class="form-floating position-relative">
+                    <input type="password" class="form-control" id="password" name="password" 
+                           placeholder="Password" required>
+                    <label for="password">Password</label>
+                    <i class="bi bi-lock input-icon"></i>
+                </div>
+                
+                <button type="submit" class="btn btn-login" id="submitBtn">
+                    <i class="bi bi-box-arrow-in-right"></i>
+                    <span id="btnText">Masuk</span>
+                </button>
+            </form>
+
+            <!-- Footer Links -->
+            <div class="form-footer">
+                <div class="footer-links">
+                    <a href="{{ url_for('static_routes.privacy') }}" class="footer-box">
+                        <i class="bi bi-shield-check"></i>
+                        <span>Kebijakan Privasi</span>
+                    </a>
+                    <a href="{{ url_for('static_routes.terms') }}" class="footer-box">
+                        <i class="bi bi-file-text"></i>
+                        <span>Syarat & Ketentuan</span>
+                    </a>
+                </div>
+                <small class="copyright-text">
+                    &copy; 2025 SEOP - School Environment Order Program
+                </small>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Popup Message System
+        const popupMsg = document.getElementById('popupMsg');
+        const popupText = document.getElementById('popupText');
+        const popupClose = document.getElementById('popupClose');
+        const popupIcon = popupMsg.querySelector('.popup-icon i');
+
+        function showPopup(message, isError = false) {
+            popupText.textContent = message;
+            
+            if (isError) {
+                popupMsg.classList.add('error');
+                popupIcon.className = 'bi bi-exclamation-triangle-fill';
+            } else {
+                popupMsg.classList.remove('error');
+                popupIcon.className = 'bi bi-check-lg';
+            }
+            
+            popupMsg.classList.add('show');
+            
+            setTimeout(() => {
+                hidePopup();
+            }, 5000);
+        }
+
+        function hidePopup() {
+            popupMsg.classList.remove('show');
+        }
+
+        popupClose.addEventListener('click', hidePopup);
+
+        // Loading System
+        const loadingOverlay = document.getElementById('loadingOverlay');
+        const loginForm = document.getElementById('loginForm');
+        const submitBtn = document.getElementById('submitBtn');
+        const btnText = document.getElementById('btnText');
+
+        function showLoading() {
+            loadingOverlay.classList.add('show');
+            submitBtn.classList.add('loading');
+            btnText.textContent = 'Memuat...';
+            submitBtn.querySelector('i').className = 'bi bi-arrow-repeat';
+        }
+
+        function hideLoading() {
+            loadingOverlay.classList.remove('show');
+            submitBtn.classList.remove('loading');
+            btnText.textContent = 'Masuk';
+            submitBtn.querySelector('i').className = 'bi bi-box-arrow-in-right';
+        }
+
+        // Handle Flask Flash Messages
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    setTimeout(() => {
+                        showPopup("{{ message }}", {{ 'true' if category == 'error' else 'false' }});
+                    }, 300);
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        // Form Submit with Loading
+        loginForm.addEventListener('submit', function(e) {
+            const registerNumber = document.getElementById('register_number').value.trim();
+            const password = document.getElementById('password').value.trim();
+            
+            // Validation
+            if (!registerNumber || !password) {
+                e.preventDefault();
+                showPopup('Nomor registrasi dan password wajib diisi!', true);
+                return;
+            }
+
+            // Show loading animation
+            showLoading();
+        });
+
+        // Handle back button to hide loading
+        window.addEventListener('pageshow', function(event) {
+            if (event.persisted) {
+                hideLoading();
+            }
+        });
+
+        // Hide loading when page loads
+        window.addEventListener('load', function() {
+            hideLoading();
+        });
+    </script>
+</body>
+</html>

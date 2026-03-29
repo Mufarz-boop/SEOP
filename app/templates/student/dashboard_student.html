@@ -1,0 +1,101 @@
+{% extends "student/base_student.html" %}
+
+{% block title %}Dashboard Student - SEOP{% endblock %}
+{% block page_title %}Dashboard Siswa{% endblock %}
+
+{% block content %}
+<!-- Welcome Card -->
+<div class="card mb-4 bg-primary text-white">
+    <div class="card-body p-4">
+        <div class="d-flex align-items-center">
+            <div class="user-avatar me-4" style="width: 70px; height: 70px; font-size: 2rem;">
+                {{ session.full_name[0] }}
+            </div>
+            <div>
+                <h4 class="mb-1">Selamat Datang, {{ session.full_name }}!</h4>
+                <p class="mb-0 opacity-75">
+                    {{ stats.student.nis if stats.student else '-' }} | 
+                    {{ stats.student.class_name if stats.student else '-' }} | 
+                    {{ stats.student.major_name if stats.student else '-' }}
+                </p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card primary">
+            <i class="bi bi-file-earmark-text-fill stat-icon"></i>
+            <div class="stat-value">{{ stats.my_reports }}</div>
+            <div class="stat-label">Laporan Saya</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card warning">
+            <i class="bi bi-exclamation-triangle-fill stat-icon"></i>
+            <div class="stat-value">{{ stats.my_violations }}</div>
+            <div class="stat-label">Pelanggaran</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card {% if stats.violation_points > 50 %}danger{% else %}info{% endif %}">
+            <i class="bi bi-award-fill stat-icon"></i>
+            <div class="stat-value">{{ stats.violation_points }}</div>
+            <div class="stat-label">Total Poin</div>
+        </div>
+    </div>
+</div>
+
+<!-- Info Card -->
+<div class="row">
+    <div class="col-12">
+        <div class="table-container">
+            <h5 class="mb-4"><i class="bi bi-info-circle-fill me-2"></i>Informasi Penting</h5>
+            <div class="row g-4">
+                <div class="col-md-6">
+                    <div class="card h-100 border-primary">
+                        <div class="card-body">
+                            <h6 class="text-primary"><i class="bi bi-shield-check me-2"></i>Tentang SEOP</h6>
+                            <p class="small text-muted mb-0">
+                                SEOP (School Environment Order Program) adalah sistem untuk menjaga ketertiban 
+                                dan kedisiplinan di lingkungan sekolah. Anda dapat melaporkan pelanggaran 
+                                yang Anda lihat untuk membantu menciptakan lingkungan belajar yang lebih baik.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card h-100 border-warning">
+                        <div class="card-body">
+                            <h6 class="text-warning"><i class="bi bi-exclamation-circle me-2"></i>Peringatan</h6>
+                            <p class="small text-muted mb-0">
+                                Pastikan laporan yang Anda buat akurat dan dapat dipertanggungjawabkan. 
+                                Laporan palsu atau tidak benar dapat dikenakan sanksi sesuai dengan 
+                                peraturan sekolah yang berlaku.
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Quick Actions -->
+            <div class="row g-3 mt-2">
+                <div class="col-md-6">
+                    <a href="{{ url_for('student.lapor') }}" class="btn btn-primary w-100 py-3">
+                        <i class="bi bi-file-earmark-plus fs-3 d-block mb-2"></i>
+                        Buat Laporan
+                    </a>
+                </div>
+                <div class="col-md-6">
+                    <a href="{{ url_for('student.peraturan_sekolah') }}" class="btn btn-outline-primary w-100 py-3">
+                        <i class="bi bi-journal-bookmark fs-3 d-block mb-2"></i>
+                        Lihat Peraturan Sekolah
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

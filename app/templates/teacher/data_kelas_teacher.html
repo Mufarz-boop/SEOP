@@ -1,0 +1,633 @@
+{% extends "teacher/base_teacher.html" %}
+
+{% block title %}{% if show_detail %}Detail {{ selected_class.class_name }}{% else %}Data Kelas{% endif %} - SEOP{% endblock %}
+{% block page_title %}{% if show_detail %}Detail {{ selected_class.class_name }}{% else %}Data Kelas{% endif %}{% endblock %}
+
+{% block extra_css %}
+<style>
+    .page-container {
+        background: #f8f9fa;
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+    
+    /* Card Styles */
+    .custom-card {
+        background: white;
+        border-radius: 16px;
+        border: none;
+        box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+        overflow: hidden;
+        transition: all 0.3s ease;
+    }
+    
+    .custom-card:hover {
+        box-shadow: 0 4px 20px rgba(0,0,0,0.12);
+    }
+    
+    .card-header-custom {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.25rem 1.5rem;
+        border: none;
+    }
+    
+    .card-header-info {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        color: white;
+        padding: 1.25rem 1.5rem;
+        border: none;
+    }
+    
+    .card-header-light {
+        background: white;
+        border-bottom: 2px solid #f0f0f0;
+        padding: 1.25rem 1.5rem;
+    }
+    
+    /* Homeroom Card - Diperlebar dan diperbagus */
+    .homeroom-card {
+        background: white;
+        border-radius: 20px;
+        border: none;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    
+    .homeroom-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    }
+    
+    .homeroom-header {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        padding: 1.5rem;
+        position: relative;
+        overflow: hidden;
+    }
+    
+    .homeroom-header::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        right: -10%;
+        width: 200px;
+        height: 200px;
+        background: rgba(255,255,255,0.1);
+        border-radius: 50%;
+    }
+    
+    .homeroom-badge {
+        background: rgba(255,255,255,0.25);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-size: 0.875rem;
+        font-weight: 600;
+        backdrop-filter: blur(10px);
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .homeroom-body {
+        padding: 2rem;
+    }
+    
+    .class-name-display {
+        font-size: 1.75rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 0.5rem;
+    }
+    
+    .grade-display {
+        font-size: 1rem;
+        color: #6c757d;
+        margin-bottom: 1.5rem;
+    }
+    
+    /* Stats */
+    .stat-box {
+        text-align: center;
+        padding: 1.25rem;
+        background: #f8f9ff;
+        border-radius: 16px;
+        transition: all 0.3s ease;
+    }
+    
+    .stat-box:hover {
+        background: #e8ecff;
+        transform: translateY(-2px);
+    }
+    
+    .stat-number {
+        font-size: 2rem;
+        font-weight: 700;
+        color: #667eea;
+        margin-bottom: 0.25rem;
+    }
+    
+    .stat-label {
+        font-size: 0.875rem;
+        color: #6c757d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-weight: 500;
+    }
+    
+    /* Table Styles */
+    .custom-table {
+        width: 100%;
+        border-collapse: separate;
+        border-spacing: 0;
+    }
+    
+    .custom-table thead th {
+        background: #f8f9fa;
+        color: #495057;
+        font-weight: 600;
+        font-size: 0.875rem;
+        padding: 1rem;
+        border-bottom: 2px solid #e9ecef;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        font-size: 0.75rem;
+    }
+    
+    .custom-table tbody td {
+        padding: 1rem;
+        border-bottom: 1px solid #f0f0f0;
+        vertical-align: middle;
+    }
+    
+    .custom-table tbody tr:hover {
+        background: #f8f9ff;
+    }
+    
+    /* Avatar */
+    .avatar-circle {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 600;
+        font-size: 0.875rem;
+    }
+    
+    /* Buttons */
+    .btn-custom-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        padding: 0.75rem 1.5rem;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        width: 100%;
+    }
+    
+    .btn-custom-primary:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+        color: white;
+    }
+    
+    .btn-custom-outline {
+        border: 2px solid #667eea;
+        color: #667eea;
+        background: transparent;
+        padding: 0.5rem 1.25rem;
+        border-radius: 8px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-custom-outline:hover {
+        background: #667eea;
+        color: white;
+    }
+    
+    .btn-action {
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: none;
+        background: #e8ecff;
+        color: #667eea;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-action:hover {
+        background: #667eea;
+        color: white;
+        transform: scale(1.1);
+    }
+    
+    /* Search Box */
+    .search-box {
+        position: relative;
+        max-width: 300px;
+    }
+    
+    .search-box input {
+        padding-left: 2.5rem;
+        border-radius: 10px;
+        border: 2px solid #e9ecef;
+        transition: all 0.3s ease;
+    }
+    
+    .search-box input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    }
+    
+    .search-box i {
+        position: absolute;
+        left: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #6c757d;
+    }
+    
+    /* Gender Badge */
+    .badge-gender-l {
+        background: #e3f2fd;
+        color: #1976d2;
+        padding: 0.35rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    
+    .badge-gender-p {
+        background: #fce4ec;
+        color: #c2185b;
+        padding: 0.35rem 0.75rem;
+        border-radius: 50px;
+        font-size: 0.75rem;
+        font-weight: 500;
+    }
+    
+    /* Active Row */
+    .row-active {
+        background: linear-gradient(135deg, #e8ecff 0%, #f0e6ff 100%) !important;
+        border-left: 4px solid #667eea;
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 3rem;
+        color: #6c757d;
+    }
+    
+    .empty-state i {
+        font-size: 4rem;
+        opacity: 0.3;
+        margin-bottom: 1rem;
+    }
+    
+    /* Section Title */
+    .section-title {
+        font-size: 1.25rem;
+        font-weight: 700;
+        color: #333;
+        margin-bottom: 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+    
+    .section-title i {
+        color: #667eea;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="page-container">
+    <div class="container">
+
+        <!-- ==================== MODE DETAIL ==================== -->
+        {% if show_detail %}
+        
+        <!-- Back Button -->
+        <div class="mb-4">
+            <a href="{{ url_for('teacher.data_kelas') }}" class="btn btn-custom-outline">
+                <i class="bi bi-arrow-left me-2"></i>Kembali
+            </a>
+        </div>
+
+        <!-- PERUBAHAN: col-12 untuk stack vertikal (atas-bawah) -->
+        <div class="row g-4 mb-4">
+            <!-- Info Kelas - FULL WIDTH, DI ATAS -->
+            <div class="col-12">
+                <div class="custom-card">
+                    <div class="card-header-custom">
+                        <h5 class="mb-0 fw-bold"><i class="bi bi-building me-2"></i>Informasi Kelas</h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="p-3 border-bottom">
+                            <small class="text-muted d-block mb-1">Nama Kelas</small>
+                            <h5 class="mb-0 fw-bold text-primary">{{ selected_class.class_name }}</h5>
+                        </div>
+                        <div class="p-3 border-bottom">
+                            <div class="row g-3">
+                                <div class="col-6">
+                                    <small class="text-muted d-block mb-1">Tingkat</small>
+                                    <span class="fw-semibold">{{ selected_class.grade_level }}</span>
+                                </div>
+                                <div class="col-6">
+                                    <small class="text-muted d-block mb-1">Ruang</small>
+                                    <span class="fw-semibold">{{ selected_class.room_number or '-' }}</span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="p-3 border-bottom">
+                            <small class="text-muted d-block mb-1">Jurusan</small>
+                            <span class="fw-semibold">{{ selected_class.major_name or '-' }}</span>
+                        </div>
+                        <div class="p-3 border-bottom">
+                            <small class="text-muted d-block mb-1">Wali Kelas</small>
+                            <span class="fw-semibold">{{ selected_class.homeroom_teacher_name or '-' }}</span>
+                        </div>
+                        <div class="p-3">
+                            <div class="stat-box">
+                                <div class="stat-number">{{ selected_class.capacity }}</div>
+                                <div class="stat-label">Kapasitas Murid</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        <!-- Daftar Murid - FULL WIDTH, DI BAWAH -->
+        <div class="col-12">
+            <div class="custom-card">
+                <div class="card-header-info d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0 fw-bold"><i class="bi bi-people me-2"></i>Daftar Murid</h5>
+                    <span class="badge bg-white text-success fs-6">{{ students|length }} murid</span>
+                </div>
+                <!-- PERUBAHAN: Hapus <br>, ganti jadi padding & spacing yang proper -->
+                <div class="card-body pt-4 pb-4 px-4">
+                    {% if students %}
+                    <!-- Search Box dengan margin bottom yang jelas -->
+                    <div class="search-box mb-4">
+                        <i class="bi bi-search"></i>
+                        <input type="text" class="form-control" id="searchStudent" placeholder="Cari murid...">
+                    </div>
+                    <div class="table-responsive">
+                        <table class="custom-table" id="studentsTable">
+                            <thead>
+                                <tr>
+                                    <th width="5%">No</th>
+                                    <th width="45%">Nama</th>
+                                    <th width="25%">NISN</th>
+                                    <th width="15%">Gender</th>
+                                    <th width="10%">Aksi</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for student in students %}
+                                <tr>
+                                    <td class="text-muted">{{ loop.index }}</td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-3">
+                                            <div class="avatar-circle">
+                                                {{ student.full_name[0]|upper }}
+                                            </div>
+                                            <span class="fw-semibold">{{ student.full_name }}</span>
+                                        </div>
+                                    </td>
+                                    <td class="text-muted font-monospace">{{ student.nis or '-' }}</td>
+                                    <td class="fw-bold">{{ student.gender or '-' }}</td>
+                                    <td>
+                                        <a href="{{ url_for('teacher.detail_murid', student_id=student.student_id) }}" 
+                                        class="btn-action" title="Lihat Detail">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="empty-state">
+                        <i class="bi bi-inbox"></i>
+                        <h6>Belum ada murid</h6>
+                        <p class="small mb-0">Kelas ini masih kosong</p>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <hr class="my-5 opacity-10">
+
+        <h5 class="section-title"><i class="bi bi-grid"></i>Kelas Lainnya</h5>
+        
+        {% endif %}
+
+        <!-- ==================== MODE LIST (DEFAULT) ==================== -->
+
+        <!-- Homeroom Classes Section - DIPERLEBAR -->
+        {% if homeroom_classes and not show_detail %}
+        <div class="mb-5">
+            <h5 class="section-title"><i class="bi bi-star-fill text-warning"></i>Kelas Wali Kelas Saya</h5>
+            <div class="row g-4">
+                {% for cls in homeroom_classes %}
+                <div class="col-12">
+                    <div class="homeroom-card">
+                        <div class="row g-0">
+                            <!-- Header Section -->
+                            <div class="col-md-4">
+                                <div class="homeroom-header h-100 d-flex flex-column justify-content-between">
+                                    <div>
+                                        <span class="homeroom-badge mb-3">
+                                            <i class="bi bi-star-fill"></i>Wali Kelas
+                                        </span>
+                                        <h3 class="mt-3 mb-1 fw-bold">{{ cls.class_name }}</h3>
+                                        <p class="mb-0 opacity-75">Tingkat {{ cls.grade_level }}</p>
+                                    </div>
+                                    <div class="mt-4">
+                                        <small class="opacity-75 d-block mb-1">Jurusan</small>
+                                        <span class="fw-semibold">{{ cls.major_name or 'Umum' }}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <!-- Content Section -->
+                            <div class="col-md-8">
+                                <div class="homeroom-body">
+                                    <!-- Dari row jadi stack vertical -->
+                                    <div class="d-flex flex-column gap-3 mb-4">
+                                        <div class="stat-box d-flex justify-content-between align-items-center p-3">
+                                            <div class="text-start">
+                                                <div class="stat-label mb-1">Jumlah Murid</div>
+                                                <div class="stat-number" style="font-size: 1.5rem;">{{ cls.student_count }}</div>
+                                            </div>
+                                            <i class="bi bi-people-fill fs-2 opacity-50"></i>
+                                        </div>
+                                        
+                                        <div class="stat-box d-flex justify-content-between align-items-center p-3">
+                                            <div class="text-start">
+                                                <div class="stat-label mb-1">Nomor Ruang</div>
+                                                <div class="stat-number" style="font-size: 1.5rem;">{{ cls.room_number or '-' }}</div>
+                                            </div>
+                                            <i class="bi bi-door-open-fill fs-2 opacity-50"></i>
+                                        </div>
+                                        
+                                        <div class="stat-box d-flex justify-content-between align-items-center p-3">
+                                            <div class="text-start">
+                                                <div class="stat-label mb-1">Kapasitas</div>
+                                                <div class="stat-number" style="font-size: 1.5rem;">{{ cls.capacity }}</div>
+                                            </div>
+                                            <i class="bi bi-person-plus-fill fs-2 opacity-50"></i>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <a href="{{ url_for('teacher.detail_kelas', class_id=cls.class_id) }}" class="btn btn-custom-primary px-5">
+                                            <i class="bi bi-eye me-2"></i>Lihat Detail Kelas
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- All Classes Section -->
+        <div class="custom-card">
+            <div class="card-header-light d-flex justify-content-between align-items-center flex-wrap gap-3">
+                <h5 class="mb-0 fw-bold {% if show_detail %}text-muted{% endif %}">
+                    <i class="bi bi-building me-2 text-primary"></i>{% if show_detail %}Semua Kelas{% else %}Daftar Kelas{% endif %}
+                </h5>
+                <div class="search-box">
+                    <i class="bi bi-search"></i>
+                    <input type="text" class="form-control form-control-sm" id="searchInput" placeholder="Cari kelas...">
+                </div>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="custom-table mb-0" id="dataTable">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Nama Kelas</th>
+                                <th>Tingkat</th>
+                                <th>Jurusan</th>
+                                <th>Ruang</th>
+                                <th>Kapasitas</th>
+                                <th>Wali Kelas</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for cls in all_classes %}
+                            <tr class="{% if show_detail and selected_class.class_id == cls.class_id %}row-active{% endif %}">
+                                <td class="text-muted">{{ loop.index }}</td>
+                                <td>
+                                    <span class="fw-bold text-dark">{{ cls.class_name }}</span>
+                                </td>
+                                <td><span class="badge bg-light text-dark">{{ cls.grade_level }}</span></td>
+                                <td class="text-muted">{{ cls.major_name or '-' }}</td>
+                                <td class="text-muted">{{ cls.room_number or '-' }}</td>
+                                <td><span class="fw-semibold text-primary">{{ cls.capacity }}</span></td>
+                                <td>
+                                    {% if cls.homeroom_teacher_name %}
+                                    <div class="d-flex align-items-center gap-2">
+                                        <div class="avatar-circle" style="width: 28px; height: 28px; font-size: 0.75rem;">
+                                            {{ cls.homeroom_teacher_name[0]|upper }}
+                                        </div>
+                                        <span class="small">{{ cls.homeroom_teacher_name }}</span>
+                                    </div>
+                                    {% else %}
+                                    <span class="text-muted">-</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if show_detail and selected_class.class_id == cls.class_id %}
+                                    <span class="badge bg-primary"><i class="bi bi-check-circle me-1"></i>Aktif</span>
+                                    {% else %}
+                                    <a href="{{ url_for('teacher.detail_kelas', class_id=cls.class_id) }}" class="btn-action" title="Lihat Detail">
+                                        <i class="bi bi-eye"></i>
+                                    </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% else %}
+                            <tr>
+                                <td colspan="8">
+                                    <div class="empty-state">
+                                        <i class="bi bi-inbox"></i>
+                                        <h6>Belum ada data kelas</h6>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Search untuk tabel kelas
+        const searchInput = document.getElementById('searchInput');
+        const table = document.getElementById('dataTable');
+        
+        if (searchInput && table) {
+            searchInput.addEventListener('keyup', function() {
+                const filter = this.value.toLowerCase();
+                const rows = table.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    if (row.querySelector('.empty-state')) return;
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = text.includes(filter) ? '' : 'none';
+                });
+            });
+        }
+
+        // Search untuk tabel murid (mode detail)
+        const searchStudent = document.getElementById('searchStudent');
+        const studentsTable = document.getElementById('studentsTable');
+        
+        if (searchStudent && studentsTable) {
+            searchStudent.addEventListener('keyup', function() {
+                const filter = this.value.toLowerCase();
+                const rows = studentsTable.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = text.includes(filter) ? '' : 'none';
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}

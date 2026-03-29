@@ -1,0 +1,58 @@
+{% extends "student/base_student.html" %}
+
+{% block title %}Peraturan Sekolah - SEOP{% endblock %}
+{% block page_title %}Peraturan Sekolah{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <p class="text-muted mb-0">Daftar jenis pelanggaran dan poinnya</p>
+    </div>
+</div>
+
+<div class="table-container">
+    <div class="table-responsive">
+        <table class="table" id="dataTable">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Nama Pelanggaran</th>
+                    <th>Deskripsi</th>
+                    <th>Poin</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for vt in violation_types %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td><strong>{{ vt.name }}</strong></td>
+                    <td>{{ vt.description or '-' }}</td>
+                    <td>
+                        <span class="badge bg-danger">{{ vt.points }} poin</span>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="text-center py-5 text-muted">
+                        <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                        Belum ada data jenis pelanggaran
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Warning Card -->
+<div class="card mt-4 border-warning">
+    <div class="card-body">
+        <h6 class="text-warning"><i class="bi bi-exclamation-triangle-fill me-2"></i>Peringatan</h6>
+        <p class="mb-0 small text-muted">
+            Hindari melakukan pelanggaran yang tercantum di atas. Akumulasi poin pelanggaran 
+            yang tinggi dapat berakibat pada sanksi seperti panggilan orang tua, skorsing, 
+            atau bahkan dikeluarkan dari sekolah. Mari jaga ketertiban bersama!
+        </p>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,163 @@
+{% extends "teacher/base_teacher.html" %}
+
+{% block title %}Data Murid - SEOP{% endblock %}
+{% block page_title %}Data Murid{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <p class="text-muted mb-0">Lihat data murid sekolah</p>
+    </div>
+</div>
+
+<div class="table-container">
+    <div class="table-responsive">
+        <table class="table" id="dataTable">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>NIS</th>
+                    <th>Nama Lengkap</th>
+                    <th>Kelas</th>
+                    <th>Jurusan</th>
+                    <th>Jenis Kelamin</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ student.nis }}</td>
+                    <td><strong>{{ student.full_name }}</strong></td>
+                    <td>{{ student.class_name or '-' }}</td>
+                    <td>{{ student.major_name or '-' }}</td>
+                    <td>
+                        {% if student.gender == 'male' %}
+                            <span class="badge bg-info">Laki-laki</span>
+                        {% elif student.gender == 'female' %}
+                            <span class="badge bg-warning">Perempuan</span>
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge status-{{ student.status }}">
+                            {{ student.status|upper }}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#modalDetail{{ student.student_id }}">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="text-center py-5 text-muted">
+                        <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                        Belum ada data murid
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modals for each student -->
+{% for student in students %}
+<!-- Modal Detail -->
+<div class="modal fade" id="modalDetail{{ student.student_id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detail Murid</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-4">
+                    <div class="user-avatar mx-auto" style="width: 80px; height: 80px; font-size: 2rem;">
+                        {{ student.full_name[0] }}
+                    </div>
+                    <h5 class="mt-3 mb-1">{{ student.full_name }}</h5>
+                    <p class="text-muted">{{ student.register_number }}</p>
+                </div>
+                <table class="table table-borderless">
+                    <tr>
+                        <td width="40%"><strong>NIS</strong></td>
+                        <td>{{ student.nis }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Kelas</strong></td>
+                        <td>{{ student.class_name or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Jurusan</strong></td>
+                        <td>{{ student.major_name or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Jenis Kelamin</strong></td>
+                        <td>{{ 'Laki-laki' if student.gender == 'male' else 'Perempuan' if student.gender == 'female' else '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Tanggal Lahir</strong></td>
+                        <td>{{ student.birth_date.strftime('%d %B %Y') if student.birth_date else '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Nama Ayah</strong></td>
+                        <td>{{ student.father_name }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Nama Ibu</strong></td>
+                        <td>{{ student.mother_name }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Alamat</strong></td>
+                        <td>{{ student.address or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>No. Telepon</strong></td>
+                        <td>{{ student.phone_number or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Status</strong></td>
+                        <td><span class="badge status-{{ student.status }}">{{ student.status|upper }}</span></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Simple search functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const table = document.getElementById('dataTable');
+        if (table) {
+            const searchDiv = document.createElement('div');
+            searchDiv.className = 'mb-3';
+            searchDiv.innerHTML = `
+                <div class="input-group" style="max-width: 300px;">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control" id="searchInput" placeholder="Cari murid...">
+                </div>
+            `;
+            table.parentElement.insertBefore(searchDiv, table);
+            
+            document.getElementById('searchInput').addEventListener('keyup', function() {
+                const filter = this.value.toLowerCase();
+                const rows = table.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = text.includes(filter) ? '' : 'none';
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Teacher - SEOP{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <style>
+        :root {
+            --sidebar-width: 280px;
+            --primary-color: #059669;
+            --secondary-color: #10b981;
+            --accent-color: #34d399;
+            --sidebar-bg: #064e3b;
+            --sidebar-hover: #065f46;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #f0fdf4;
+            min-height: 100vh;
+        }
+        
+        /* Sidebar - SCROLLBAR HIDDEN */
+        .sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: var(--sidebar-bg);
+            color: white;
+            overflow-y: auto;
+            overflow-x: hidden;
+            z-index: 1000;
+            transition: all 0.3s ease;
+            /* Hide scrollbar untuk Chrome, Safari, Opera */
+            scrollbar-width: none; /* Firefox */
+            -ms-overflow-style: none; /* IE 10+ */
+        }
+        
+        /* Hide scrollbar untuk Chrome, Safari, Opera */
+        .sidebar::-webkit-scrollbar {
+            display: none;
+        }
+        
+        /* Alternative: scrollbar transparan tapi tetap bisa di-scroll */
+        .sidebar::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+        
+        .sidebar-header {
+            padding: 25px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            text-align: center;
+            background: linear-gradient(135deg, rgba(5,150,105,0.3), transparent);
+        }
+        
+        .sidebar-header h4 {
+            font-weight: 700;
+            margin-bottom: 5px;
+            letter-spacing: 1px;
+        }
+        
+        .sidebar-header small {
+            opacity: 0.7;
+            font-size: 0.75rem;
+        }
+        
+        .user-profile {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            background: rgba(255,255,255,0.03);
+        }
+        
+        .user-avatar {
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, var(--secondary-color), var(--accent-color));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+        
+        .user-info h6 {
+            margin-bottom: 3px;
+            font-weight: 600;
+            font-size: 0.95rem;
+        }
+        
+        .user-info small {
+            opacity: 0.7;
+            font-size: 0.8rem;
+        }
+        
+        .nav-menu {
+            padding: 15px 0;
+        }
+        
+        .nav-item {
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: rgba(255,255,255,0.75);
+            text-decoration: none;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            border-left: 3px solid transparent;
+            margin: 2px 8px;
+            border-radius: 0 12px 12px 0;
+            position: relative;
+        }
+        
+        .nav-item::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 0;
+            background: linear-gradient(90deg, var(--secondary-color), transparent);
+            transition: width 0.3s ease;
+            border-radius: 0 12px 12px 0;
+            z-index: -1;
+        }
+        
+        .nav-item:hover {
+            color: white;
+            transform: translateX(5px);
+        }
+        
+        .nav-item:hover::before {
+            width: 100%;
+        }
+        
+        .nav-item.active {
+            color: white;
+            border-left-color: var(--accent-color);
+            background: linear-gradient(90deg, rgba(16, 185, 129, 0.2), transparent);
+            box-shadow: inset 0 0 20px rgba(16, 185, 129, 0.1);
+        }
+        
+        .nav-item.active::before {
+            width: 100%;
+            background: linear-gradient(90deg, var(--secondary-color), transparent);
+            opacity: 0.3;
+        }
+        
+        .nav-item i {
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+            transition: transform 0.3s ease;
+        }
+        
+        .nav-item:hover i {
+            transform: scale(1.1);
+        }
+        
+        .nav-item.active i {
+            color: var(--accent-color);
+        }
+        
+        .nav-section {
+            padding: 20px 20px 8px;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            opacity: 0.4;
+            font-weight: 700;
+            color: var(--accent-color);
+        }
+        
+        /* Main Content */
+        .main-content {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            transition: all 0.3s ease;
+        }
+        
+        .topbar {
+            background: white;
+            padding: 15px 30px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+        
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin: 0;
+        }
+        
+        .topbar-actions {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .btn-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            border: none;
+            background: #f1f5f9;
+            color: #64748b;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .btn-icon:hover {
+            background: var(--secondary-color);
+            color: white;
+            transform: rotate(90deg);
+        }
+        
+        .content-wrapper {
+            padding: 30px;
+        }
+        
+        /* Cards */
+        .card {
+            border: none;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+        }
+        
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 40px rgba(0,0,0,0.1);
+        }
+        
+        .stat-card {
+            padding: 25px;
+            border-radius: 16px;
+            color: white;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.1);
+            border-radius: 50%;
+        }
+        
+        .stat-card.primary { background: linear-gradient(135deg, #059669, #10b981); }
+        .stat-card.info { background: linear-gradient(135deg, #0891b2, #06b6d4); }
+        .stat-card.warning { background: linear-gradient(135deg, #d97706, #f59e0b); }
+        
+        .stat-icon {
+            font-size: 2.5rem;
+            opacity: 0.3;
+            position: absolute;
+            right: 20px;
+            top: 20px;
+        }
+        
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label {
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+        
+        /* Tables */
+        .table-container {
+            background: white;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+        }
+        
+        .table {
+            margin-bottom: 0;
+        }
+        
+        .table thead th {
+            background: #f8fafc;
+            border: none;
+            font-weight: 600;
+            color: #475569;
+            padding: 15px;
+        }
+        
+        .table tbody td {
+            padding: 15px;
+            vertical-align: middle;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        
+        /* Buttons */
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+        }
+        
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(16, 185, 129, 0.4);
+        }
+        
+        /* Status badges */
+        .status-active { background: #dcfce7; color: #166534; }
+        .status-inactive { background: #fee2e2; color: #991b1b; }
+        .status-pending { background: #fef3c7; color: #92400e; }
+        .status-approved { background: #dcfce7; color: #166534; }
+        .status-rejected { background: #fee2e2; color: #991b1b; }
+        
+        /* Logout special styling */
+        .nav-item.text-danger {
+            color: #f87171;
+            margin-top: 10px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px;
+            margin: 10px 8px 0;
+        }
+        
+        .nav-item.text-danger:hover {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+        
+        .nav-item.text-danger::before {
+            background: linear-gradient(90deg, rgba(239, 68, 68, 0.2), transparent);
+        }
+        
+        @media (max-width: 992px) {
+            .sidebar { transform: translateX(-100%); }
+            .sidebar.show { transform: translateX(0); }
+            .main-content { margin-left: 0; }
+        }
+    </style>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    {% set current_endpoint = request.endpoint %}
+    
+    <aside class="sidebar">
+        <div class="sidebar-header">
+            <h4><i class="bi bi-shield-check me-2"></i>SEOP</h4>
+            <small>School Environment Order</small>
+        </div>
+        
+        <div class="user-profile">
+            <div class="user-avatar">
+                {{ session.full_name[0] if session.full_name else 'T' }}
+            </div>
+            <div class="user-info">
+                <h6>{{ session.full_name }}</h6>
+                <small><i class="bi bi-person-workspace me-1"></i>Guru</small>
+            </div>
+        </div>
+        
+        <nav class="nav-menu">
+            <a href="{{ url_for('teacher.dashboard') }}" 
+               class="nav-item {% if current_endpoint == 'teacher.dashboard' %}active{% endif %}">
+                <i class="bi bi-speedometer2"></i>
+                <span>Dashboard</span>
+            </a>
+            
+            <div class="nav-section">Manajemen Data</div>
+            
+            <a href="{{ url_for('teacher.data_murid') }}" 
+               class="nav-item {% if current_endpoint in ['teacher.data_murid', 'teacher.detail_murid'] %}active{% endif %}">
+                <i class="bi bi-people-fill"></i>
+                <span>Data Murid</span>
+            </a>
+            
+            <a href="{{ url_for('teacher.data_kelas') }}" 
+               class="nav-item {% if current_endpoint in ['teacher.data_kelas', 'teacher.detail_kelas'] %}active{% endif %}">
+                <i class="bi bi-building"></i>
+                <span>Data Kelas</span>
+            </a>
+            
+            <div class="nav-section">Laporan</div>
+            
+            <a href="{{ url_for('teacher.lapor') }}" 
+               class="nav-item {% if current_endpoint == 'teacher.lapor' %}active{% endif %}">
+                <i class="bi bi-file-earmark-plus-fill"></i>
+                <span>Buat Laporan</span>
+            </a>
+            
+            <div class="nav-section">Sistem</div>
+            
+            <a href="{{ url_for('teacher.peraturan_sekolah') }}" 
+               class="nav-item {% if current_endpoint == 'teacher.peraturan_sekolah' %}active{% endif %}">
+                <i class="bi bi-journal-bookmark-fill"></i>
+                <span>Peraturan Sekolah</span>
+            </a>
+            
+            <a href="{{ url_for('teacher.pengaturan') }}" 
+               class="nav-item {% if current_endpoint == 'teacher.pengaturan' %}active{% endif %}">
+                <i class="bi bi-gear-fill"></i>
+                <span>Pengaturan</span>
+            </a>
+            
+            <a href="{{ url_for('auth.logout') }}" class="nav-item text-danger">
+                <i class="bi bi-box-arrow-right"></i>
+                <span>Keluar</span>
+            </a>
+        </nav>
+    </aside>
+    
+    <main class="main-content">
+        <div class="topbar">
+            <h2 class="page-title">{% block page_title %}Dashboard{% endblock %}</h2>
+            <div class="topbar-actions">
+                <button class="btn-icon" onclick="toggleSidebar()">
+                    <i class="bi bi-list"></i>
+                </button>
+            </div>
+        </div>
+        
+        <div class="content-wrapper">
+            {% with messages = get_flashed_messages(with_categories=true) %}
+                {% if messages %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show" role="alert">
+                            {{ message }}
+                            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                        </div>
+                    {% endfor %}
+                {% endif %}
+            {% endwith %}
+            
+            {% block content %}{% endblock %}
+        </div>
+    </main>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function toggleSidebar() {
+            document.querySelector('.sidebar').classList.toggle('show');
+        }
+        setTimeout(() => {
+            document.querySelectorAll('.alert').forEach(alert => {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            });
+        }, 5000);
+    </script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

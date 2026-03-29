@@ -1,0 +1,110 @@
+{% extends "student/base_student.html" %}
+
+{% block title %}Buat Laporan - SEOP{% endblock %}
+{% block page_title %}Buat Laporan{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-lg-8">
+        <div class="card">
+            <div class="card-header bg-primary text-white py-3">
+                <h5 class="mb-0"><i class="bi bi-file-earmark-plus-fill me-2"></i>Form Laporan</h5>
+            </div>
+            <div class="card-body p-4">
+                <form method="POST" action="{{ url_for('student.lapor') }}" enctype="multipart/form-data">
+                    <!-- Pihak yang Terlibat -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-person-fill me-2"></i>Pihak yang Terlibat <span class="text-danger">*</span>
+                        </label>
+                        <select name="student_id" class="form-select" required>
+                            <option value="">Pilih Murid</option>
+                            {% for s in students %}
+                            <option value="{{ s.student_id }}">{{ s.full_name }} ({{ s.nis }}) - {{ s.class_name or 'Tanpa Kelas' }}</option>
+                            {% endfor %}
+                        </select>
+                        <small class="text-muted">Pilih murid yang terlibat dalam kejadian</small>
+                    </div>
+                    
+                    <!-- Kirim ke Admin -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-shield-fill me-2"></i>Kirim ke Admin <span class="text-danger">*</span>
+                        </label>
+                        <select name="admin_id" class="form-select" required>
+                            <option value="">Pilih Admin Tujuan</option>
+                            {% for admin in admins %}
+                            <option value="{{ admin.user_id }}">{{ admin.full_name }} {% if admin.position %}({{ admin.position }}){% endif %}</option>
+                            {% endfor %}
+                        </select>
+                        <small class="text-muted">Pilih admin yang akan menerima laporan ini</small>
+                    </div>
+                    
+                    <!-- Judul Laporan -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-chat-square-text-fill me-2"></i>Judul Laporan <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" name="title" class="form-control" placeholder="Masukkan judul laporan" required>
+                    </div>
+                    
+                    <!-- Kategori Pelanggaran -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-tags-fill me-2"></i>Kategori Pelanggaran
+                        </label>
+                        <select name="violation_type_id" class="form-select">
+                            <option value="">Pilih Kategori (Opsional)</option>
+                            {% for vt in violation_types %}
+                            <option value="{{ vt.id }}">{{ vt.name }} ({{ vt.points }} poin)</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    
+                    <!-- Deskripsi -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-file-text-fill me-2"></i>Deskripsi Kejadian <span class="text-danger">*</span>
+                        </label>
+                        <textarea name="description" class="form-control" rows="5" placeholder="Jelaskan detail kejadian..." required></textarea>
+                    </div>
+                    
+                    <!-- Upload File -->
+                    <div class="mb-4">
+                        <label class="form-label fw-bold">
+                            <i class="bi bi-paperclip me-2"></i>Lampiran (Opsional)
+                        </label>
+                        <input type="file" name="evidence" class="form-control" accept="image/*,video/*,audio/*,.pdf,.doc,.docx">
+                        <small class="text-muted">
+                            Format yang diizinkan: JPG, PNG, GIF, MP4, MP3, WAV, PDF, DOC, DOCX (Max 16MB)
+                        </small>
+                    </div>
+                    
+                    <!-- Submit Buttons -->
+                    <div class="d-flex gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-send-fill me-2"></i>Kirim Laporan
+                        </button>
+                        <a href="{{ url_for('student.dashboard') }}" class="btn btn-secondary">
+                            <i class="bi bi-x-lg me-2"></i>Batal
+                        </a>
+                    </div>
+                </form>
+            </div>
+        </div>
+        
+        <!-- Info Card -->
+        <div class="card mt-4 border-info">
+            <div class="card-body">
+                <h6 class="text-info"><i class="bi bi-info-circle-fill me-2"></i>Informasi</h6>
+                <ul class="mb-0 small text-muted">
+                    <li>Laporan yang Anda buat akan diteruskan ke admin yang Anda pilih</li>
+                    <li>Admin akan meninjau dan memutuskan status laporan (diterima/ditolak)</li>
+                    <li>Jika laporan diterima, poin pelanggaran akan ditambahkan ke murid yang bersangkutan</li>
+                    <li>Pastikan data yang Anda masukkan akurat dan dapat dipertanggungjawabkan</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

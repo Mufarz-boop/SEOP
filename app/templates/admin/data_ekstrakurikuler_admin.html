@@ -1,0 +1,286 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Data Ekstrakurikuler - SEOP{% endblock %}
+{% block page_title %}Data Ekstrakurikuler{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <p class="text-muted mb-0">Kelola data ekstrakurikuler sekolah</p>
+    </div>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambah">
+        <i class="bi bi-plus-lg me-2"></i>Tambah Ekstrakurikuler
+    </button>
+</div>
+
+<div class="table-container">
+    <div class="table-responsive">
+        <table class="table" id="dataTable">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Nama</th>
+                    <th>Pembina</th>
+                    <th>Ketua</th>
+                    <th>Jadwal</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for e in extracurriculars %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td><strong>{{ e.name }}</strong></td>
+                    <td>{{ e.supervisor_name or '-' }}</td>
+                    <td>{{ e.leader_name or '-' }}</td>
+                    <td>
+                        {% if e.schedule_day and e.schedule_time %}
+                            {{ e.schedule_day }}, {{ e.schedule_time }}
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge status-{{ e.status }}">
+                            {{ e.status|upper }}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#modalDetail{{ e.extracurricular_id }}">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalEdit{{ e.extracurricular_id }}">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#modalHapus{{ e.extracurricular_id }}">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="text-center py-5 text-muted">
+                        <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                        Belum ada data ekstrakurikuler
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Tambah -->
+<div class="modal fade" id="modalTambah" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Tambah Ekstrakurikuler Baru</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('admin.tambah_ekstrakurikuler') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nama Ekstrakurikuler <span class="text-danger">*</span></label>
+                        <input type="text" name="name" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Deskripsi</label>
+                        <textarea name="description" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Pembina</label>
+                        <select name="supervisor_teacher_id" class="form-select">
+                            <option value="">Pilih Pembina</option>
+                            {% for teacher in teachers %}
+                            <option value="{{ teacher.teacher_id }}">{{ teacher.full_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Ketua (Murid)</label>
+                        <select name="student_leader_id" class="form-select">
+                            <option value="">Pilih Ketua</option>
+                            {% for student in students %}
+                            <option value="{{ student.student_id }}">{{ student.full_name }} ({{ student.nis }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Hari Kegiatan</label>
+                            <select name="schedule_day" class="form-select">
+                                <option value="">Pilih Hari</option>
+                                <option value="Sunday">Minggu</option>
+                                <option value="Monday">Senin</option>
+                                <option value="Tuesday">Selasa</option>
+                                <option value="Wednesday">Rabu</option>
+                                <option value="Thursday">Kamis</option>
+                                <option value="Friday">Jumat</option>
+                                <option value="Saturday">Sabtu</option>
+                                <option value="Fullday">Fullday</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Jam Kegiatan</label>
+                            <input type="time" name="schedule_time" class="form-control">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Lokasi</label>
+                        <input type="text" name="location" class="form-control" placeholder="Contoh: Lapangan Sekolah">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modals for each extracurricular -->
+{% for e in extracurriculars %}
+<!-- Modal Detail -->
+<div class="modal fade" id="modalDetail{{ e.extracurricular_id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detail Ekstrakurikuler</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h5 class="mb-3">{{ e.name }}</h5>
+                <table class="table table-borderless">
+                    <tr>
+                        <td width="40%"><strong>Pembina</strong></td>
+                        <td>{{ e.supervisor_name or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Ketua</strong></td>
+                        <td>{{ e.leader_name or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Jadwal</strong></td>
+                        <td>{{ e.schedule_day or '-' }} {{ e.schedule_time or '' }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Lokasi</strong></td>
+                        <td>{{ e.location or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Status</strong></td>
+                        <td><span class="badge status-{{ e.status }}">{{ e.status|upper }}</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Deskripsi</strong></td>
+                        <td>{{ e.description or '-' }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Edit -->
+<div class="modal fade" id="modalEdit{{ e.extracurricular_id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Ekstrakurikuler</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('admin.edit_ekstrakurikuler', extracurricular_id=e.extracurricular_id) }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nama Ekstrakurikuler</label>
+                        <input type="text" name="name" class="form-control" value="{{ e.name }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Deskripsi</label>
+                        <textarea name="description" class="form-control" rows="3">{{ e.description or '' }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Pembina</label>
+                        <select name="supervisor_teacher_id" class="form-select">
+                            <option value="">Pilih Pembina</option>
+                            {% for teacher in teachers %}
+                            <option value="{{ teacher.teacher_id }}" {% if e.supervisor_teacher_id == teacher.teacher_id %}selected{% endif %}>{{ teacher.full_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Ketua (Murid)</label>
+                        <select name="student_leader_id" class="form-select">
+                            <option value="">Pilih Ketua</option>
+                            {% for student in students %}
+                            <option value="{{ student.student_id }}" {% if e.student_leader_id == student.student_id %}selected{% endif %}>{{ student.full_name }} ({{ student.nis }})</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Hari Kegiatan</label>
+                            <select name="schedule_day" class="form-select">
+                                <option value="">Pilih Hari</option>
+                                <option value="Sunday" {% if e.schedule_day == 'Sunday' %}selected{% endif %}>Minggu</option>
+                                <option value="Monday" {% if e.schedule_day == 'Monday' %}selected{% endif %}>Senin</option>
+                                <option value="Tuesday" {% if e.schedule_day == 'Tuesday' %}selected{% endif %}>Selasa</option>
+                                <option value="Wednesday" {% if e.schedule_day == 'Wednesday' %}selected{% endif %}>Rabu</option>
+                                <option value="Thursday" {% if e.schedule_day == 'Thursday' %}selected{% endif %}>Kamis</option>
+                                <option value="Friday" {% if e.schedule_day == 'Friday' %}selected{% endif %}>Jumat</option>
+                                <option value="Saturday" {% if e.schedule_day == 'Saturday' %}selected{% endif %}>Sabtu</option>
+                                <option value="Fullday" {% if e.schedule_day == 'Fullday' %}selected{% endif %}>Fullday</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Jam Kegiatan</label>
+                            <input type="time" name="schedule_time" class="form-control" value="{{ e.schedule_time }}">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Lokasi</label>
+                        <input type="text" name="location" class="form-control" value="{{ e.location or '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <select name="status" class="form-select">
+                            <option value="active" {% if e.status == 'active' %}selected{% endif %}>Aktif</option>
+                            <option value="inactive" {% if e.status == 'inactive' %}selected{% endif %}>Tidak Aktif</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Hapus -->
+<div class="modal fade" id="modalHapus{{ e.extracurricular_id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Konfirmasi Hapus</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Apakah Anda yakin ingin menghapus data ekstrakurikuler <strong>{{ e.name }}</strong>?</p>
+                <p class="text-danger"><small>Tindakan ini tidak dapat dibatalkan.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <form method="POST" action="{{ url_for('admin.hapus_ekstrakurikuler', extracurricular_id=e.extracurricular_id) }}" class="d-inline">
+                    <button type="submit" class="btn btn-danger">Hapus</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}

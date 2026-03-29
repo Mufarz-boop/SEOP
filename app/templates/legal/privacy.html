@@ -1,0 +1,710 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kebijakan Privasi - SEOP</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --forest: #064e3b;
+            --emerald: #059669;
+            --sage: #6b9080;
+            --mint: #d1fae5;
+            --cream: #f8fafc;
+            --stone: #57534e;
+            --white: #ffffff;
+            --gray-50: #f9fafb;
+            --gray-100: #f3f4f6;
+            --gray-200: #e5e7eb;
+            --gray-400: #9ca3af;
+            --gray-600: #4b5563;
+            --gray-800: #1f2937;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            min-height: 100vh;
+            color: var(--gray-800);
+            line-height: 1.6;
+            overflow-x: hidden;
+            background: #000;
+            font-size: 14px;
+        }
+
+        /* Background */
+        .bg-container {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            overflow: hidden;
+        }
+
+        .bg-image {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('https://images.unsplash.com/photo-1517245386807-bb43f82c33c4?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80');
+            background-size: cover;
+            background-position: center;
+            background-attachment: fixed;
+            transform: scale(1.1);
+            animation: slowZoom 20s ease-in-out infinite alternate;
+        }
+
+        .bg-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(6, 78, 59, 0.85) 0%, rgba(5, 150, 105, 0.75) 50%, rgba(6, 78, 59, 0.9) 100%);
+            backdrop-filter: blur(2px);
+        }
+
+        @keyframes slowZoom {
+            0% { transform: scale(1.1); }
+            100% { transform: scale(1.2); }
+        }
+
+        /* Scroll Progress */
+        .scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            height: 2px;
+            background: linear-gradient(90deg, var(--emerald), #34d399);
+            z-index: 1000;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+
+        /* Compact Container */
+        .privacy-wrapper {
+            padding: 40px 15px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .privacy-container {
+            max-width: 720px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            box-shadow: 
+                0 20px 40px -10px rgba(0, 0, 0, 0.2),
+                0 0 0 1px rgba(255, 255, 255, 0.1) inset;
+            overflow: hidden;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Compact Header */
+        .privacy-header {
+            background: linear-gradient(135deg, rgba(6, 78, 59, 0.95) 0%, rgba(5, 150, 105, 0.9) 100%);
+            padding: 32px 24px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .privacy-header::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 1px, transparent 1px);
+            background-size: 15px 15px;
+            opacity: 0.3;
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% { transform: translate(0, 0); }
+            100% { transform: translate(15px, 15px); }
+        }
+
+        .header-content {
+            position: relative;
+            z-index: 1;
+        }
+
+        .header-icon-wrapper {
+            position: relative;
+            display: inline-block;
+            margin-bottom: 16px;
+        }
+
+        .header-icon {
+            width: 56px;
+            height: 56px;
+            background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.05));
+            border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: white;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+        }
+
+        .glow-ring {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 70px;
+            height: 70px;
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 20px;
+            animation: rotate 10s linear infinite;
+        }
+
+        @keyframes rotate {
+            from { transform: translate(-50%, -50%) rotate(0deg); }
+            to { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+
+        .privacy-header h1 {
+            font-family: 'Space Grotesk', sans-serif;
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: white;
+            margin-bottom: 6px;
+            letter-spacing: -0.02em;
+        }
+
+        .privacy-header .subtitle {
+            color: rgba(255, 255, 255, 0.85);
+            font-size: 0.9rem;
+            font-weight: 500;
+            margin-bottom: 12px;
+        }
+
+        .last-updated {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: rgba(255, 255, 255, 0.9);
+            font-weight: 500;
+        }
+
+        /* Compact Content */
+        .privacy-content {
+            padding: 24px;
+            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+        }
+
+        .section {
+            margin-bottom: 16px;
+            padding: 20px;
+            background: white;
+            border-radius: 12px;
+            border: 1px solid var(--gray-100);
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.02);
+            transition: all 0.25s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 3px;
+            height: 100%;
+            background: linear-gradient(180deg, var(--emerald), var(--forest));
+            transform: scaleY(0);
+            transition: transform 0.25s ease;
+        }
+
+        .section:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px -4px rgba(0, 0, 0, 0.05);
+            border-color: var(--mint);
+        }
+
+        .section:hover::before {
+            transform: scaleY(1);
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 12px;
+        }
+
+        .section-icon {
+            width: 36px;
+            height: 36px;
+            background: linear-gradient(135deg, var(--mint), #a7f3d0);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--forest);
+            font-size: 1rem;
+            flex-shrink: 0;
+            box-shadow: 0 2px 8px rgba(6, 78, 59, 0.1);
+        }
+
+        .section:hover .section-icon {
+            transform: scale(1.1);
+        }
+
+        .section-title-group h2 {
+            font-family: 'Space Grotesk', sans-serif;
+            color: var(--forest);
+            font-weight: 600;
+            font-size: 1rem;
+            margin: 0;
+        }
+
+        .section p {
+            color: var(--stone);
+            line-height: 1.6;
+            font-size: 0.9rem;
+            margin-bottom: 12px;
+            margin-left: 48px;
+        }
+
+        .section ul {
+            list-style: none;
+            padding: 0;
+            margin: 0 0 0 48px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .section ul li {
+            position: relative;
+            padding-left: 20px;
+            color: var(--gray-600);
+            font-size: 0.85rem;
+            line-height: 1.5;
+        }
+
+        .section ul li::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 8px;
+            width: 5px;
+            height: 5px;
+            background: var(--emerald);
+            border-radius: 50%;
+        }
+
+        /* Compact Badges */
+        .security-badges {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-top: 12px;
+            margin-left: 48px;
+        }
+
+        .badge-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            background: var(--gray-50);
+            border: 1px solid var(--gray-200);
+            border-radius: 20px;
+            font-size: 0.75rem;
+            color: var(--gray-600);
+            font-weight: 500;
+        }
+
+        .badge-item i {
+            color: var(--emerald);
+            font-size: 0.8rem;
+        }
+
+        /* Compact Contact */
+        .contact-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+            gap: 8px;
+            margin-left: 48px;
+            margin-top: 12px;
+        }
+
+        .contact-card {
+            padding: 12px;
+            background: var(--gray-50);
+            border: 1px solid var(--gray-200);
+            border-radius: 10px;
+            text-align: center;
+            transition: all 0.2s ease;
+        }
+
+        .contact-card:hover {
+            transform: translateY(-2px);
+            border-color: var(--emerald);
+        }
+
+        .contact-card i {
+            font-size: 1.1rem;
+            color: var(--emerald);
+            margin-bottom: 4px;
+            display: block;
+        }
+
+        .contact-card span {
+            font-size: 0.8rem;
+            color: var(--gray-600);
+            font-weight: 500;
+        }
+
+        /* Compact Footer */
+        .privacy-footer {
+            padding: 20px 24px;
+            background: var(--gray-50);
+            border-top: 1px solid var(--gray-100);
+            text-align: center;
+        }
+
+        .btn-back {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 10px 20px;
+            background: linear-gradient(135deg, var(--forest), var(--emerald));
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            text-decoration: none;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(6, 78, 59, 0.2);
+        }
+
+        .btn-back:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(6, 78, 59, 0.3);
+            color: white;
+        }
+
+        /* Compact FAB */
+        .fab {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            width: 44px;
+            height: 44px;
+            background: linear-gradient(135deg, var(--forest), var(--emerald));
+            border: none;
+            border-radius: 50%;
+            color: white;
+            font-size: 1.2rem;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(6, 78, 59, 0.3);
+            transition: all 0.2s ease;
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .fab:hover {
+            transform: scale(1.1);
+        }
+
+        /* Responsive */
+        @media (max-width: 640px) {
+            .privacy-wrapper {
+                padding: 20px 10px;
+            }
+
+            .privacy-header {
+                padding: 24px 16px;
+            }
+
+            .privacy-header h1 {
+                font-size: 1.5rem;
+            }
+
+            .privacy-content {
+                padding: 16px;
+            }
+
+            .section {
+                padding: 16px;
+            }
+
+            .section p,
+            .section ul,
+            .security-badges,
+            .contact-grid {
+                margin-left: 0;
+            }
+
+            .contact-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        ::selection {
+            background: var(--mint);
+            color: var(--forest);
+        }
+
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: var(--gray-100);
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: var(--emerald);
+            border-radius: 3px;
+        }
+    </style>
+</head>
+<body>
+    <div class="scroll-progress" id="scrollProgress"></div>
+    
+    <div class="bg-container">
+        <div class="bg-image"></div>
+        <div class="bg-overlay"></div>
+    </div>
+
+    <div class="privacy-wrapper">
+        <div class="privacy-container">
+            <!-- Header -->
+            <div class="privacy-header">
+                <div class="header-content">
+                    <div class="header-icon-wrapper">
+                        <div class="glow-ring"></div>
+                        <div class="header-icon">
+                            <i class="bi bi-shield-check"></i>
+                        </div>
+                    </div>
+                    <h1>Kebijakan Privasi</h1>
+                    <p class="subtitle">SEOP - School Environment Order Program</p>
+                    <div class="last-updated">
+                        <i class="bi bi-calendar-check"></i>
+                        Terakhir diperbarui: 07 Maret 2026
+                    </div>
+                </div>
+            </div>
+
+            <!-- Content -->
+            <div class="privacy-content">
+                <div class="section">
+                    <div class="section-header">
+                        <div class="section-icon">
+                            <i class="bi bi-database"></i>
+                        </div>
+                        <div class="section-title-group">
+                            <h2>1. Pengumpulan Data</h2>
+                        </div>
+                    </div>
+                    <p>Kami mengumpulkan data pribadi yang diperlukan untuk operasional sistem SEOP:</p>
+                    <ul>
+                        <li>Nama lengkap dan identitas pengguna</li>
+                        <li>Nomor registrasi/NIS/NIP unik</li>
+                        <li>Informasi kontak (email, telepon)</li>
+                        <li>Data akademik (kelas, jurusan)</li>
+                        <li>Data aktivitas dalam sistem</li>
+                    </ul>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">
+                        <div class="section-icon">
+                            <i class="bi bi-gear"></i>
+                        </div>
+                        <div class="section-title-group">
+                            <h2>2. Penggunaan Data</h2>
+                        </div>
+                    </div>
+                    <p>Data digunakan untuk:</p>
+                    <ul>
+                        <li>Manajemen data sekolah terintegrasi</li>
+                        <li>Sistem pelaporan pelanggaran tata tertib</li>
+                        <li>Komunikasi antar pihak terkait</li>
+                        <li>Penyusunan laporan akademik</li>
+                        <li>Peningkatan kualitas layanan</li>
+                    </ul>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">
+                        <div class="section-icon">
+                            <i class="bi bi-shield-lock"></i>
+                        </div>
+                        <div class="section-title-group">
+                            <h2>3. Keamanan Data</h2>
+                        </div>
+                    </div>
+                    <p>Langkah keamanan yang kami terapkan:</p>
+                    <ul>
+                        <li>Enkripsi password bcrypt dengan salt</li>
+                        <li>Autentikasi session dengan timeout</li>
+                        <li>Akses berbasis role (RBAC)</li>
+                        <li>Proteksi SQL Injection</li>
+                        <li>Audit log aktivitas sensitif</li>
+                    </ul>
+                    <div class="security-badges">
+                        <div class="badge-item">
+                            <i class="bi bi-shield-check"></i>
+                            <span>256-bit</span>
+                        </div>
+                        <div class="badge-item">
+                            <i class="bi bi-check-circle"></i>
+                            <span>GDPR</span>
+                        </div>
+                        <div class="badge-item">
+                            <i class="bi bi-clock-history"></i>
+                            <span>Monitoring</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">
+                        <div class="section-icon">
+                            <i class="bi bi-person-check"></i>
+                        </div>
+                        <div class="section-title-group">
+                            <h2>4. Hak Pengguna</h2>
+                        </div>
+                    </div>
+                    <p>Hak Anda sebagai pengguna:</p>
+                    <ul>
+                        <li>Akses dan lihat data pribadi</li>
+                        <li>Perbarui informasi profil</li>
+                        <li>Ubah password berkala</li>
+                        <li>Lihat riwayat laporan</li>
+                        <li>Request penghapusan data</li>
+                    </ul>
+                </div>
+
+                <div class="section">
+                    <div class="section-header">
+                        <div class="section-icon">
+                            <i class="bi bi-envelope"></i>
+                        </div>
+                        <div class="section-title-group">
+                            <h2>5. Kontak & Laporan</h2>
+                        </div>
+                    </div>
+                    <p>Hubungi tim kami:</p>
+                    <div class="contact-grid">
+                        <div class="contact-card">
+                            <i class="bi bi-envelope-fill"></i>
+                            <span></span>
+                        </div>
+                        <div class="contact-card">
+                            <i class="bi bi-telephone-fill"></i>
+                            <span></span>
+                        </div>
+                        <div class="contact-card">
+                            <i class="bi bi-geo-alt-fill"></i>
+                            <span></span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="privacy-footer">
+                <a href="{{ url_for('auth.login') }}" class="btn-back">
+                    <i class="bi bi-arrow-left"></i>
+                    Kembali ke Login
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <button class="fab" onclick="window.scrollTo({top: 0, behavior: 'smooth'})" title="Kembali ke atas">
+        <i class="bi bi-arrow-up"></i>
+    </button>
+
+    <script>
+        // Scroll Progress
+        window.addEventListener('scroll', () => {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            document.getElementById('scrollProgress').style.width = scrolled + "%";
+        });
+
+        // Fade in animation
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -30px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('.section').forEach((section, index) => {
+            section.style.opacity = '0';
+            section.style.transform = 'translateY(20px)';
+            section.style.transition = `all 0.4s ease ${index * 0.05}s`;
+            observer.observe(section);
+        });
+
+        // Parallax background
+        window.addEventListener('scroll', () => {
+            const scrolled = window.pageYOffset;
+            const bg = document.querySelector('.bg-image');
+            bg.style.transform = `scale(1.1) translateY(${scrolled * 0.3}px)`;
+        });
+    </script>
+</body>
+</html>

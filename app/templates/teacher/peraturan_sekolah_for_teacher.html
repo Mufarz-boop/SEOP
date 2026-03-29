@@ -1,0 +1,58 @@
+{% extends "teacher/base_teacher.html" %}
+
+{% block title %}Peraturan Sekolah - SEOP{% endblock %}
+{% block page_title %}Peraturan Sekolah{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <p class="text-muted mb-0">Daftar jenis pelanggaran dan poinnya</p>
+    </div>
+</div>
+
+<div class="table-container">
+    <div class="table-responsive">
+        <table class="table" id="dataTable">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Nama Pelanggaran</th>
+                    <th>Deskripsi</th>
+                    <th>Poin</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for vt in violation_types %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td><strong>{{ vt.name }}</strong></td>
+                    <td>{{ vt.description or '-' }}</td>
+                    <td>
+                        <span class="badge bg-danger">{{ vt.points }} poin</span>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="4" class="text-center py-5 text-muted">
+                        <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                        Belum ada data jenis pelanggaran
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Info Card -->
+<div class="card mt-4 border-info">
+    <div class="card-body">
+        <h6 class="text-info"><i class="bi bi-info-circle-fill me-2"></i>Informasi</h6>
+        <p class="mb-0 small text-muted">
+            Daftar di atas menunjukkan jenis-jenis pelanggaran yang berlaku di sekolah beserta poinnya. 
+            Poin pelanggaran akan ditambahkan ke murid yang melakukan pelanggaran sesuai dengan jenisnya. 
+            Akumulasi poin yang tinggi dapat berakibat pada sanksi yang lebih berat.
+        </p>
+    </div>
+</div>
+{% endblock %}

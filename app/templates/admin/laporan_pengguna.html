@@ -1,0 +1,539 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Laporan Pengguna - SEOP{% endblock %}
+{% block page_title %}Laporan Pengguna{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <p class="text-muted mb-0">Kelola dan tinjau laporan dari pengguna</p>
+    </div>
+    <div>
+        <button onclick="printAllReports()" class="btn btn-primary">
+            <i class="bi bi-printer me-2"></i>Print Semua Laporan
+        </button>
+    </div>
+</div>
+
+<div class="table-container">
+    <div class="table-responsive">
+        <table class="table" id="dataTable">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Judul</th>
+                    <th>Pelapor</th>
+                    <th>Murid Terlibat</th>
+                    <th>Kategori</th>
+                    <th>Status</th>
+                    <th>Tanggal</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for report in reports %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ report.title }}</td>
+                    <td>
+                        <span class="badge bg-secondary">{{ report.reporter_role }}</span>
+                        <br><small>{{ report.reporter_name }}</small>
+                    </td>
+                    <td>
+                        {% if report.student_name %}
+                            {{ report.student_name }}
+                            <br><small class="text-muted">{{ report.student_nis }}</small>
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>{{ report.violation_type_name or '-' }}</td>
+                    <td>
+                        <span class="badge status-{{ report.status }}">
+                            {{ report.status|upper }}
+                        </span>
+                    </td>
+                    <td>{{ report.created_at.strftime('%d %b %Y %H:%M') if report.created_at else '-' }}</td>
+                    <td>
+                        <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#modalDetail{{ report.id }}">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        <button class="btn btn-sm btn-secondary" onclick="printSingleReport({{ report.id }})">
+                            <i class="bi bi-printer"></i>
+                        </button>
+                        {% if report.status == 'pending' %}
+                        <button class="btn btn-sm btn-success" data-bs-toggle="modal" data-bs-target="#modalApprove{{ report.id }}">
+                            <i class="bi bi-check-lg"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#modalReject{{ report.id }}">
+                            <i class="bi bi-x-lg"></i>
+                        </button>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="text-center py-5 text-muted">
+                        <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                        Belum ada laporan
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modals for each report -->
+{% for report in reports %}
+<!-- Modal Detail -->
+<div class="modal fade" id="modalDetail{{ report.id }}" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detail Laporan</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <table class="table table-borderless">
+                    <tr>
+                        <td width="30%"><strong>Judul</strong></td>
+                        <td>{{ report.title }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Pelapor</strong></td>
+                        <td>{{ report.reporter_name }} ({{ report.reporter_role }})</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Murid Terlibat</strong></td>
+                        <td>{{ report.student_name or '-' }} ({{ report.student_nis or '-' }})</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Kategori</strong></td>
+                        <td>{{ report.violation_type_name or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Status</strong></td>
+                        <td><span class="badge status-{{ report.status }}">{{ report.status|upper }}</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Tanggal</strong></td>
+                        <td>{{ report.created_at.strftime('%d %B %Y %H:%M') if report.created_at else '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Deskripsi</strong></td>
+                        <td>{{ report.description }}</td>
+                    </tr>
+                    {% if report.evidence_url %}
+                    <tr>
+                        <td><strong>Lampiran</strong></td>
+                        <td>
+                            {% set file_ext = report.evidence_url.split('.')[-1].lower() %}
+                            {% set image_exts = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'] %}
+                            
+                            {% if file_ext in image_exts %}
+                                <!-- Preview untuk gambar -->
+                                <div class="mb-3">
+                                    <img src="{{ url_for('static_routes.uploaded_file', filename=report.evidence_url) }}" 
+                                         alt="Lampiran Laporan" 
+                                         class="img-fluid rounded border" 
+                                         style="max-height: 300px; cursor: pointer;"
+                                         onclick="openImageModal('{{ url_for('static_routes.uploaded_file', filename=report.evidence_url) }}')">
+                                    <small class="text-muted d-block mt-1">Klik gambar untuk memperbesar</small>
+                                </div>
+                            {% else %}
+                                <!-- Icon untuk file non-gambar -->
+                                <div class="mb-3 p-3 bg-light rounded border">
+                                    <i class="bi bi-file-earmark-text fs-1 text-primary"></i>
+                                    <p class="mb-0 mt-2 text-muted">{{ report.evidence_url }}</p>
+                                </div>
+                            {% endif %}
+                            
+                            <!-- Tombol Download -->
+                            <a href="{{ url_for('static_routes.uploaded_file', filename=report.evidence_url) }}" 
+                               target="_blank" 
+                               class="btn btn-outline-primary btn-sm">
+                                <i class="bi bi-download me-1"></i>
+                                {% if file_ext in image_exts %}
+                                    Download Gambar
+                                {% else %}
+                                    Download File
+                                {% endif %}
+                            </a>
+                            
+                            {% if file_ext in image_exts %}
+                            <button onclick="printImage('{{ url_for('static_routes.uploaded_file', filename=report.evidence_url) }}')" 
+                                    class="btn btn-outline-secondary btn-sm ms-2">
+                                <i class="bi bi-printer me-1"></i>Print Gambar
+                            </button>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endif %}
+                </table>
+                <div class="mt-3 text-end">
+                    <button onclick="printSingleReport({{ report.id }})" class="btn btn-primary">
+                        <i class="bi bi-printer me-2"></i>Print Laporan Ini
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden print template for each report -->
+<div id="printTemplate{{ report.id }}" style="display: none;">
+    <div style="font-family: Arial, sans-serif; max-width: 800px; margin: 0 auto; padding: 20px;">
+        <div style="text-align: center; border-bottom: 3px solid #2c3e50; padding-bottom: 20px; margin-bottom: 30px;">
+            <h1 style="color: #2c3e50; margin: 0; font-size: 24px;">DETAIL LAPORAN</h1>
+            <p style="color: #7f8c8d; margin: 10px 0 0 0;">SEOP - Sistem Etika dan Opini Pelajar</p>
+        </div>
+        
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <tr style="border-bottom: 1px solid #ecf0f1;">
+                <td style="padding: 12px; width: 30%; font-weight: bold; color: #2c3e50;">Nomor Laporan</td>
+                <td style="padding: 12px; color: #34495e;">#{{ report.id }}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #ecf0f1;">
+                <td style="padding: 12px; font-weight: bold; color: #2c3e50;">Judul</td>
+                <td style="padding: 12px; color: #34495e;">{{ report.title }}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #ecf0f1;">
+                <td style="padding: 12px; font-weight: bold; color: #2c3e50;">Pelapor</td>
+                <td style="padding: 12px; color: #34495e;">{{ report.reporter_name }} ({{ report.reporter_role }})</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #ecf0f1;">
+                <td style="padding: 12px; font-weight: bold; color: #2c3e50;">Murid Terlibat</td>
+                <td style="padding: 12px; color: #34495e;">
+                    {% if report.student_name %}
+                        {{ report.student_name }} (NIS: {{ report.student_nis }})
+                    {% else %}
+                        Tidak ada
+                    {% endif %}
+                </td>
+            </tr>
+            <tr style="border-bottom: 1px solid #ecf0f1;">
+                <td style="padding: 12px; font-weight: bold; color: #2c3e50;">Kategori</td>
+                <td style="padding: 12px; color: #34495e;">{{ report.violation_type_name or 'Tidak dikategorikan' }}</td>
+            </tr>
+            <tr style="border-bottom: 1px solid #ecf0f1;">
+                <td style="padding: 12px; font-weight: bold; color: #2c3e50;">Status</td>
+                <td style="padding: 12px; color: #34495e; text-transform: uppercase; font-weight: bold;">
+                    {% if report.status == 'pending' %}⏳ MENUNGGU{% endif %}
+                    {% if report.status == 'approved' %}✅ DISETUJUI{% endif %}
+                    {% if report.status == 'rejected' %}❌ DITOLAK{% endif %}
+                </td>
+            </tr>
+            <tr style="border-bottom: 1px solid #ecf0f1;">
+                <td style="padding: 12px; font-weight: bold; color: #2c3e50;">Tanggal Dibuat</td>
+                <td style="padding: 12px; color: #34495e;">{{ report.created_at.strftime('%d %B %Y %H:%M') if report.created_at else '-' }}</td>
+            </tr>
+        </table>
+        
+        <div style="margin-top: 30px; padding: 20px; background-color: #f8f9fa; border-left: 4px solid #3498db; border-radius: 4px;">
+            <h3 style="margin: 0 0 15px 0; color: #2c3e50; font-size: 16px;">Deskripsi Laporan:</h3>
+            <p style="margin: 0; color: #555; line-height: 1.6; white-space: pre-wrap;">{{ report.description }}</p>
+        </div>
+        
+        {% if report.evidence_url %}
+        {% set file_ext = report.evidence_url.split('.')[-1].lower() %}
+        {% set image_exts = ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'webp', 'svg'] %}
+        
+        <div style="margin-top: 20px; padding: 15px; background-color: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px;">
+            <h4 style="margin: 0 0 15px 0; color: #2c3e50; font-size: 14px;">📎 Lampiran:</h4>
+            
+            {% if file_ext in image_exts %}
+                <img src="{{ url_for('static_routes.uploaded_file', filename=report.evidence_url) }}" 
+                     style="max-width: 100%; max-height: 400px; border: 1px solid #ddd; border-radius: 4px;">
+            {% else %}
+                <div style="padding: 20px; text-align: center; background: white; border-radius: 4px;">
+                    <p style="margin: 0; color: #666;">📄 {{ report.evidence_url }}</p>
+                    <small style="color: #999;">File non-gambar</small>
+                </div>
+            {% endif %}
+        </div>
+        {% endif %}
+        
+        <div style="margin-top: 50px; padding-top: 20px; border-top: 1px solid #bdc3c7; text-align: center; color: #7f8c8d; font-size: 12px;">
+            <p>Dokumen ini dicetak secara otomatis dari sistem SEOP</p>
+            <p>Tanggal Cetak: {{ report.created_at.strftime('%d/%m/%Y %H:%M') if report.created_at else '-' }}</p>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Approve -->
+<div class="modal fade" id="modalApprove{{ report.id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Setujui Laporan</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Apakah Anda yakin ingin menyetujui laporan ini?</p>
+                <p class="text-muted">Laporan yang disetujui akan menambahkan poin pelanggaran ke murid yang bersangkutan.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <form method="POST" action="{{ url_for('admin.update_status_laporan', report_id=report.id) }}" class="d-inline">
+                    <input type="hidden" name="status" value="approved">
+                    <button type="submit" class="btn btn-success">Setujui</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Reject -->
+<div class="modal fade" id="modalReject{{ report.id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Tolak Laporan</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Apakah Anda yakin ingin menolak laporan ini?</p>
+                <p class="text-muted">Laporan yang ditolak tidak akan menambahkan poin pelanggaran.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <form method="POST" action="{{ url_for('admin.update_status_laporan', report_id=report.id) }}" class="d-inline">
+                    <input type="hidden" name="status" value="rejected">
+                    <button type="submit" class="btn btn-danger">Tolak</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- Image Preview Modal -->
+<div class="modal fade" id="imagePreviewModal" tabindex="-1">
+    <div class="modal-dialog modal-xl modal-dialog-centered">
+        <div class="modal-content bg-transparent border-0">
+            <div class="modal-header border-0 position-absolute w-100" style="z-index: 1050;">
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center p-0">
+                <img id="previewImage" src="" alt="Preview" class="img-fluid" style="max-height: 90vh;">
+            </div>
+            <div class="modal-footer border-0 justify-content-center">
+                <a id="downloadImageBtn" href="#" target="_blank" class="btn btn-light">
+                    <i class="bi bi-download me-2"></i>Download
+                </a>
+                <button onclick="printCurrentImage()" class="btn btn-primary">
+                    <i class="bi bi-printer me-2"></i>Print
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+@media print {
+    body * {
+        visibility: hidden;
+    }
+    #printArea, #printArea * {
+        visibility: visible;
+    }
+    #printArea {
+        position: absolute;
+        left: 0;
+        top: 0;
+        width: 100%;
+        display: block !important;
+    }
+}
+
+/* Image hover effect */
+.img-fluid.rounded.border {
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.img-fluid.rounded.border:hover {
+    transform: scale(1.02);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+}
+
+/* Modal image preview */
+#imagePreviewModal .modal-content {
+    background: rgba(0,0,0,0.9) !important;
+}
+
+#previewImage {
+    box-shadow: 0 10px 40px rgba(0,0,0,0.5);
+}
+</style>
+
+<script>
+let currentImageUrl = '';
+
+function openImageModal(imageUrl) {
+    currentImageUrl = imageUrl;
+    document.getElementById('previewImage').src = imageUrl;
+    document.getElementById('downloadImageBtn').href = imageUrl;
+    const modal = new bootstrap.Modal(document.getElementById('imagePreviewModal'));
+    modal.show();
+}
+
+function printCurrentImage() {
+    if (!currentImageUrl) return;
+    
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>Print Gambar</title>
+            <style>
+                body { 
+                    margin: 0; 
+                    display: flex; 
+                    justify-content: center; 
+                    align-items: center; 
+                    min-height: 100vh;
+                    background: white;
+                }
+                img { 
+                    max-width: 100%; 
+                    max-height: 100vh; 
+                    object-fit: contain;
+                }
+                @media print {
+                    body { margin: 0; }
+                    img { max-width: 100%; height: auto; }
+                }
+            </style>
+        </head>
+        <body>
+            <img src="${currentImageUrl}" onload="window.print()">
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+}
+
+function printImage(imageUrl) {
+    const printWindow = window.open('', '_blank');
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>Print Gambar</title>
+            <style>
+                body { 
+                    margin: 0; 
+                    display: flex; 
+                    justify-content: center; 
+                    align-items: center; 
+                    min-height: 100vh;
+                    background: white;
+                }
+                img { 
+                    max-width: 100%; 
+                    max-height: 100vh; 
+                    object-fit: contain;
+                }
+                @media print {
+                    body { margin: 0; }
+                    img { max-width: 100%; height: auto; }
+                }
+            </style>
+        </head>
+        <body>
+            <img src="${imageUrl}" onload="window.print()">
+        </body>
+        </html>
+    `);
+    printWindow.document.close();
+}
+
+function printSingleReport(reportId) {
+    const printContent = document.getElementById('printTemplate' + reportId).innerHTML;
+    const printWindow = window.open('', '_blank', 'width=800,height=600');
+    
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>Print Laporan #${reportId}</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 20px; }
+                @media print {
+                    .no-print { display: none; }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="no-print" style="margin-bottom: 20px; padding: 10px; background: #f0f0f0; text-align: center;">
+                <button onclick="window.print()" style="padding: 10px 20px; font-size: 16px; cursor: pointer;">
+                    🖨️ Print
+                </button>
+                <button onclick="window.close()" style="padding: 10px 20px; font-size: 16px; cursor: pointer; margin-left: 10px;">
+                    ❌ Tutup
+                </button>
+            </div>
+            ${printContent}
+        </body>
+        </html>
+    `);
+    
+    printWindow.document.close();
+}
+
+function printAllReports() {
+    const printWindow = window.open('', '_blank', 'width=1000,height=700');
+    let allReportsHtml = '';
+    
+    {% for report in reports %}
+    allReportsHtml += `
+        <div style="page-break-after: always; margin-bottom: 30px;">
+            ${document.getElementById('printTemplate{{ report.id }}').innerHTML}
+        </div>
+    `;
+    {% endfor %}
+    
+    const currentDate = new Date().toLocaleString('id-ID', {
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    });
+    
+    printWindow.document.write(`
+        <html>
+        <head>
+            <title>Print Semua Laporan - SEOP</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 20px; }
+                @media print {
+                    .no-print { display: none; }
+                    .page-break { page-break-after: always; }
+                }
+            </style>
+        </head>
+        <body>
+            <div class="no-print" style="margin-bottom: 20px; padding: 15px; background: #3498db; color: white; text-align: center; border-radius: 8px;">
+                <h3 style="margin: 0 0 10px 0;">📋 Print Semua Laporan</h3>
+                <p style="margin: 0 0 15px 0;">Total: {{ reports|length }} laporan | Tanggal: ${currentDate}</p>
+                <button onclick="window.print()" style="padding: 12px 30px; font-size: 16px; cursor: pointer; background: white; color: #3498db; border: none; border-radius: 5px; font-weight: bold;">
+                    🖨️ Print Sekarang
+                </button>
+                <button onclick="window.close()" style="padding: 12px 30px; font-size: 16px; cursor: pointer; background: #e74c3c; color: white; border: none; border-radius: 5px; margin-left: 10px;">
+                    ❌ Tutup
+                </button>
+            </div>
+            <div style="text-align: center; margin-bottom: 30px; border-bottom: 3px solid #2c3e50; padding-bottom: 20px;">
+                <h1 style="color: #2c3e50; margin: 0;">LAPORAN PENGGUNA SEOP</h1>
+                <p style="color: #7f8c8d; margin: 10px 0;">Ringkasan Semua Laporan</p>
+                <p style="color: #95a5a6; font-size: 14px;">Dicetak pada: ${currentDate}</p>
+            </div>
+            ${allReportsHtml}
+        </body>
+        </html>
+    `);
+    
+    printWindow.document.close();
+}
+</script>
+{% endblock %}

@@ -1,0 +1,114 @@
+{% extends "teacher/base_teacher.html" %}
+
+{% block title %}Dashboard Teacher - SEOP{% endblock %}
+{% block page_title %}Dashboard Guru{% endblock %}
+
+{% block content %}
+<!-- Welcome Card -->
+<div class="card mb-4 bg-primary text-white">
+    <div class="card-body p-4">
+        <div class="d-flex align-items-center">
+            <div class="user-avatar me-4" style="width: 70px; height: 70px; font-size: 2rem;">
+                {{ session.full_name[0] }}
+            </div>
+            <div>
+                <h4 class="mb-1">Selamat Datang, {{ session.full_name }}!</h4>
+                <p class="mb-0 opacity-75">{{ teacher.department or '-' }} | {{ teacher.subject_name or '-'}}</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Statistics Cards -->
+<div class="row g-4 mb-4">
+    <div class="col-md-4">
+        <div class="stat-card primary">
+            <i class="bi bi-building stat-icon"></i>
+            <div class="stat-value">{{ stats.total_homeroom_classes }}</div>
+            <div class="stat-label">Kelas Wali Kelas</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card info">
+            <i class="bi bi-people-fill stat-icon"></i>
+            <div class="stat-value">{{ stats.total_students }}</div>
+            <div class="stat-label">Total Murid di Kelas</div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="stat-card warning">
+            <i class="bi bi-file-earmark-text-fill stat-icon"></i>
+            <div class="stat-value">{{ stats.my_reports }}</div>
+            <div class="stat-label">Laporan Saya</div>
+        </div>
+    </div>
+</div>
+
+<!-- Homeroom Classes -->
+{% if stats.homeroom_classes %}
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="table-container">
+            <h5 class="mb-4"><i class="bi bi-building me-2"></i>Kelas Wali Kelas</h5>
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Nama Kelas</th>
+                            <th>Tingkat</th>
+                            <th>Ruang</th>
+                            <th>Jumlah Murid</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for cls in stats.homeroom_classes %}
+                        <tr>
+                            <td><strong>{{ cls.class_name }}</strong></td>
+                            <td>{{ cls.grade_level }}</td>
+                            <td>{{ cls.room_number or '-' }}</td>
+                            <td>{{ cls.student_count }} murid</td>
+                            <td>
+                                <a href="{{ url_for('teacher.detail_kelas', class_id=cls.class_id) }}" class="btn btn-sm btn-info">
+                                    <i class="bi bi-eye"></i> Detail
+                                </a>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+
+<!-- Quick Actions -->
+<div class="row">
+    <div class="col-12">
+        <div class="table-container">
+            <h5 class="mb-4"><i class="bi bi-lightning-fill me-2"></i>Aksi Cepat</h5>
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <a href="{{ url_for('teacher.lapor') }}" class="btn btn-primary w-100 py-3">
+                        <i class="bi bi-file-earmark-plus fs-3 d-block mb-2"></i>
+                        Buat Laporan
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{{ url_for('teacher.data_murid') }}" class="btn btn-outline-primary w-100 py-3">
+                        <i class="bi bi-people fs-3 d-block mb-2"></i>
+                        Lihat Data Murid
+                    </a>
+                </div>
+                <div class="col-md-4">
+                    <a href="{{ url_for('teacher.peraturan_sekolah') }}" class="btn btn-outline-info w-100 py-3">
+                        <i class="bi bi-journal-bookmark fs-3 d-block mb-2"></i>
+                        Peraturan Sekolah
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

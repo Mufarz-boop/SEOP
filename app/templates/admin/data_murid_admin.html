@@ -1,0 +1,391 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Data Murid - SEOP{% endblock %}
+{% block page_title %}Data Murid{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <p class="text-muted mb-0">Kelola data murid sekolah</p>
+    </div>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambah">
+        <i class="bi bi-plus-lg me-2"></i>Tambah Murid
+    </button>
+</div>
+
+<div class="table-container">
+    <div class="table-responsive">
+        <table class="table" id="dataTable">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Foto</th>
+                    <th>NIS</th>
+                    <th>Nama Lengkap</th>
+                    <th>Kelas</th>
+                    <th>Jurusan</th>
+                    <th>Jenis Kelamin</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>
+                        <div class="user-avatar" style="width: 40px; height: 40px; font-size: 1rem;">
+                            {{ student.full_name[0] if student.full_name else 'S' }}
+                        </div>
+                    </td>
+                    <td>{{ student.nis }}</td>
+                    <td>
+                        <strong>{{ student.full_name }}</strong>
+                        <br><small class="text-muted">{{ student.register_number }}</small>
+                    </td>
+                    <td>{{ student.class_name or '-' }}</td>
+                    <td>{{ student.major_name or '-' }}</td>
+                    <td>
+                        {% if student.gender == 'male' %}
+                            <span class="badge bg-info">Laki-laki</span>
+                        {% elif student.gender == 'female' %}
+                            <span class="badge bg-warning">Perempuan</span>
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                    <td>
+                        <span class="badge status-{{ student.status }}">
+                            {{ student.status|upper }}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#modalDetail{{ student.student_id }}">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalEdit{{ student.student_id }}">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#modalHapus{{ student.student_id }}">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="9" class="text-center py-5 text-muted">
+                        <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                        Belum ada data murid
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Tambah -->
+<div class="modal fade" id="modalTambah" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Tambah Murid Baru</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('admin.tambah_murid') }}">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Nama Lengkap <span class="text-danger">*</span></label>
+                            <input type="text" name="full_name" class="form-control" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Username</label>
+                            <input type="text" name="username" class="form-control">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Password <span class="text-danger">*</span></label>
+                            <input type="password" name="password" class="form-control" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">NIS <span class="text-danger">*</span></label>
+                            <input type="text" name="nis" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Tanggal Lahir</label>
+                            <input type="date" name="birth_date" class="form-control">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Jenis Kelamin</label>
+                            <select name="gender" class="form-select">
+                                <option value="">Pilih</option>
+                                <option value="male">Laki-laki</option>
+                                <option value="female">Perempuan</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Kelas</label>
+                            <select name="class_id" class="form-select">
+                                <option value="">Pilih Kelas</option>
+                                {% for cls in classes %}
+                                <option value="{{ cls.class_id }}">{{ cls.class_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Jurusan</label>
+                            <select name="major_id" class="form-select">
+                                <option value="">Pilih Jurusan</option>
+                                {% for major in majors %}
+                                <option value="{{ major.major_id }}">{{ major.major_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Nama Ayah <span class="text-danger">*</span></label>
+                            <input type="text" name="father_name" class="form-control" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Nama Ibu <span class="text-danger">*</span></label>
+                            <input type="text" name="mother_name" class="form-control" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Alamat</label>
+                        <textarea name="address" class="form-control" rows="2"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">No. Telepon</label>
+                        <input type="text" name="phone_number" class="form-control">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modals for each student -->
+{% for student in students %}
+<!-- Modal Detail -->
+<div class="modal fade" id="modalDetail{{ student.student_id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detail Murid</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="text-center mb-4">
+                    <div class="user-avatar mx-auto" style="width: 80px; height: 80px; font-size: 2rem;">
+                        {{ student.full_name[0] }}
+                    </div>
+                    <h5 class="mt-3 mb-1">{{ student.full_name }}</h5>
+                    <p class="text-muted">{{ student.register_number }}</p>
+                </div>
+                <table class="table table-borderless">
+                    <tr>
+                        <td width="40%"><strong>NIS</strong></td>
+                        <td>{{ student.nis }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Kelas</strong></td>
+                        <td>{{ student.class_name or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Jurusan</strong></td>
+                        <td>{{ student.major_name or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Jenis Kelamin</strong></td>
+                        <td>{{ 'Laki-laki' if student.gender == 'male' else 'Perempuan' if student.gender == 'female' else '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Tanggal Lahir</strong></td>
+                        <td>{{ student.birth_date.strftime('%d %B %Y') if student.birth_date else '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Nama Ayah</strong></td>
+                        <td>{{ student.father_name }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Nama Ibu</strong></td>
+                        <td>{{ student.mother_name }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Alamat</strong></td>
+                        <td>{{ student.address or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>No. Telepon</strong></td>
+                        <td>{{ student.phone_number or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Status</strong></td>
+                        <td><span class="badge status-{{ student.status }}">{{ student.status|upper }}</span></td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Edit -->
+<div class="modal fade" id="modalEdit{{ student.student_id }}" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Murid</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('admin.edit_murid', student_id=student.student_id) }}">
+                <div class="modal-body">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Nama Lengkap</label>
+                            <input type="text" name="full_name" class="form-control" value="{{ student.full_name }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Username</label>
+                            <input type="text" name="username" class="form-control" value="{{ student.username or '' }}">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">NIS</label>
+                            <input type="text" name="nis" class="form-control" value="{{ student.nis }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Tanggal Lahir</label>
+                            <input type="date" name="birth_date" class="form-control" value="{{ student.birth_date }}">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Jenis Kelamin</label>
+                            <select name="gender" class="form-select">
+                                <option value="">Pilih</option>
+                                <option value="male" {% if student.gender == 'male' %}selected{% endif %}>Laki-laki</option>
+                                <option value="female" {% if student.gender == 'female' %}selected{% endif %}>Perempuan</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Status</label>
+                            <select name="status" class="form-select">
+                                <option value="active" {% if student.status == 'active' %}selected{% endif %}>Aktif</option>
+                                <option value="inactive" {% if student.status == 'inactive' %}selected{% endif %}>Tidak Aktif</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Kelas</label>
+                            <select name="class_id" class="form-select">
+                                <option value="">Pilih Kelas</option>
+                                {% for cls in classes %}
+                                <option value="{{ cls.class_id }}" {% if student.class_id == cls.class_id %}selected{% endif %}>{{ cls.class_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Jurusan</label>
+                            <select name="major_id" class="form-select">
+                                <option value="">Pilih Jurusan</option>
+                                {% for major in majors %}
+                                <option value="{{ major.major_id }}" {% if student.major_id == major.major_id %}selected{% endif %}>{{ major.major_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Nama Ayah</label>
+                            <input type="text" name="father_name" class="form-control" value="{{ student.father_name }}">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label class="form-label">Nama Ibu</label>
+                            <input type="text" name="mother_name" class="form-control" value="{{ student.mother_name }}">
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Alamat</label>
+                        <textarea name="address" class="form-control" rows="2">{{ student.address or '' }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">No. Telepon</label>
+                        <input type="text" name="phone_number" class="form-control" value="{{ student.phone_number or '' }}">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Hapus -->
+<div class="modal fade" id="modalHapus{{ student.student_id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Konfirmasi Hapus</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Apakah Anda yakin ingin menghapus data murid <strong>{{ student.full_name }}</strong>?</p>
+                <p class="text-danger"><small>Tindakan ini tidak dapat dibatalkan.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <form method="POST" action="{{ url_for('admin.hapus_murid', student_id=student.student_id) }}" class="d-inline">
+                    <button type="submit" class="btn btn-danger">Hapus</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Simple search functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const table = document.getElementById('dataTable');
+        if (table) {
+            // Add search input
+            const searchDiv = document.createElement('div');
+            searchDiv.className = 'mb-3';
+            searchDiv.innerHTML = `
+                <div class="input-group" style="max-width: 300px;">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control" id="searchInput" placeholder="Cari murid...">
+                </div>
+            `;
+            table.parentElement.insertBefore(searchDiv, table);
+            
+            document.getElementById('searchInput').addEventListener('keyup', function() {
+                const filter = this.value.toLowerCase();
+                const rows = table.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = text.includes(filter) ? '' : 'none';
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}

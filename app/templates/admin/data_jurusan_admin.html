@@ -1,0 +1,212 @@
+{% extends "admin/base_admin.html" %}
+
+{% block title %}Data Jurusan - SEOP{% endblock %}
+{% block page_title %}Data Jurusan{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <p class="text-muted mb-0">Kelola data jurusan sekolah</p>
+    </div>
+    <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#modalTambah">
+        <i class="bi bi-plus-lg me-2"></i>Tambah Jurusan
+    </button>
+</div>
+
+<div class="table-container">
+    <div class="table-responsive">
+        <table class="table" id="dataTable">
+            <thead>
+                <tr>
+                    <th>No</th>
+                    <th>Nama Jurusan</th>
+                    <th>Kepala Jurusan</th>
+                    <th>Tahun Berdiri</th>
+                    <th>Status</th>
+                    <th>Aksi</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for major in majors %}
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td><strong>{{ major.major_name }}</strong></td>
+                    <td>{{ major.head_of_major_name or '-' }}</td>
+                    <td>{{ major.established_year or '-' }}</td>
+                    <td>
+                        <span class="badge status-{{ major.status }}">
+                            {{ major.status|upper }}
+                        </span>
+                    </td>
+                    <td>
+                        <button class="btn btn-sm btn-info" data-bs-toggle="modal" data-bs-target="#modalDetail{{ major.major_id }}">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        <button class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#modalEdit{{ major.major_id }}">
+                            <i class="bi bi-pencil"></i>
+                        </button>
+                        <button class="btn btn-sm btn-danger" data-bs-toggle="modal" data-bs-target="#modalHapus{{ major.major_id }}">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center py-5 text-muted">
+                        <i class="bi bi-inbox fs-1 d-block mb-3"></i>
+                        Belum ada data jurusan
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Modal Tambah -->
+<div class="modal fade" id="modalTambah" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Tambah Jurusan Baru</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('admin.tambah_jurusan') }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nama Jurusan <span class="text-danger">*</span></label>
+                        <input type="text" name="major_name" class="form-control" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Deskripsi</label>
+                        <textarea name="description" class="form-control" rows="3"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Kepala Jurusan</label>
+                        <select name="head_of_major_id" class="form-select">
+                            <option value="">Pilih Kepala Jurusan</option>
+                            {% for teacher in teachers %}
+                            <option value="{{ teacher.teacher_id }}">{{ teacher.full_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tahun Berdiri</label>
+                        <input type="number" name="established_year" class="form-control" placeholder="Contoh: 2000">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modals for each major -->
+{% for major in majors %}
+<!-- Modal Detail -->
+<div class="modal fade" id="modalDetail{{ major.major_id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Detail Jurusan</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <h5 class="mb-3">{{ major.major_name }}</h5>
+                <table class="table table-borderless">
+                    <tr>
+                        <td width="40%"><strong>Kepala Jurusan</strong></td>
+                        <td>{{ major.head_of_major_name or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Tahun Berdiri</strong></td>
+                        <td>{{ major.established_year or '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Status</strong></td>
+                        <td><span class="badge status-{{ major.status }}">{{ major.status|upper }}</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Deskripsi</strong></td>
+                        <td>{{ major.description or '-' }}</td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Edit -->
+<div class="modal fade" id="modalEdit{{ major.major_id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Edit Jurusan</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form method="POST" action="{{ url_for('admin.edit_jurusan', major_id=major.major_id) }}">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label class="form-label">Nama Jurusan</label>
+                        <input type="text" name="major_name" class="form-control" value="{{ major.major_name }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Deskripsi</label>
+                        <textarea name="description" class="form-control" rows="3">{{ major.description or '' }}</textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Kepala Jurusan</label>
+                        <select name="head_of_major_id" class="form-select">
+                            <option value="">Pilih Kepala Jurusan</option>
+                            {% for teacher in teachers %}
+                            <option value="{{ teacher.teacher_id }}" {% if major.head_of_major_id == teacher.teacher_id %}selected{% endif %}>{{ teacher.full_name }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Tahun Berdiri</label>
+                        <input type="number" name="established_year" class="form-control" value="{{ major.established_year or '' }}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Status</label>
+                        <select name="status" class="form-select">
+                            <option value="active" {% if major.status == 'active' %}selected{% endif %}>Aktif</option>
+                            <option value="inactive" {% if major.status == 'inactive' %}selected{% endif %}>Tidak Aktif</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Simpan Perubahan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Modal Hapus -->
+<div class="modal fade" id="modalHapus{{ major.major_id }}" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Konfirmasi Hapus</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <p>Apakah Anda yakin ingin menghapus data jurusan <strong>{{ major.major_name }}</strong>?</p>
+                <p class="text-danger"><small>Tindakan ini tidak dapat dibatalkan.</small></p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                <form method="POST" action="{{ url_for('admin.hapus_jurusan', major_id=major.major_id) }}" class="d-inline">
+                    <button type="submit" class="btn btn-danger">Hapus</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+{% endblock %}
