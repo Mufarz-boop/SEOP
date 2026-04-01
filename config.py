@@ -19,4 +19,4 @@ class Config:
     ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'gif', 'mp4', 'mp3', 'wav', 'pdf', 'doc', 'docx'}
     
     # Session Configuration
-    PERMANENT_SESSION_LIFETIME = 3600  # 1 hour
+    PERMANENT_SESSION_LIFETIME = 604800  # 1 Minggu

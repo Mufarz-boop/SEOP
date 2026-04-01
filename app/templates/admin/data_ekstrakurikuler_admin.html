@@ -284,3 +284,33 @@
 </div>
 {% endfor %}
 {% endblock %}
+
+{% block extra_js %}
+<script>
+    // Simple search functionality
+    document.addEventListener('DOMContentLoaded', function() {
+        const table = document.getElementById('dataTable');
+        if (table) {
+            // Add search input
+            const searchDiv = document.createElement('div');
+            searchDiv.className = 'mb-3';
+            searchDiv.innerHTML = `
+                <div class="input-group" style="max-width: 300px;">
+                    <span class="input-group-text"><i class="bi bi-search"></i></span>
+                    <input type="text" class="form-control" id="searchInput" placeholder="Cari ekstrakurikuler...">
+                </div>
+            `;
+            table.parentElement.insertBefore(searchDiv, table);
+            
+            document.getElementById('searchInput').addEventListener('keyup', function() {
+                const filter = this.value.toLowerCase();
+                const rows = table.querySelectorAll('tbody tr');
+                rows.forEach(row => {
+                    const text = row.textContent.toLowerCase();
+                    row.style.display = text.includes(filter) ? '' : 'none';
+                });
+            });
+        }
+    });
+</script>
+{% endblock %}

@@ -3,6 +3,92 @@
 {% block title %}Dashboard Student - SEOP{% endblock %}
 {% block page_title %}Dashboard Siswa{% endblock %}
 
+{% block extra_css %}
+<style>
+    /* Danger card styling for high violation points */
+    .stat-card.danger-high {
+        background: linear-gradient(135deg, #dc3545 0%, #8b0000 100%);
+        color: white;
+        animation: pulse-danger 2s infinite;
+    }
+    
+    .stat-card.danger-high .stat-icon {
+        color: #ffebee;
+    }
+    
+    @keyframes pulse-danger {
+        0%, 100% { box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4); }
+        50% { box-shadow: 0 4px 25px rgba(220, 53, 69, 0.8); }
+    }
+    
+    /* Warning card styling for medium violation points */
+    .stat-card.warning-medium {
+        background: linear-gradient(135deg, #ffc107 0%, #ff9800 100%);
+        color: #212529;
+    }
+    
+    .stat-card.warning-medium .stat-icon {
+        color: #e65100;
+    }
+    
+    /* Modal styling */
+    .danger-modal .modal-content {
+        border: 3px solid #dc3545;
+        background: linear-gradient(135deg, #ffebee 0%, #ffcdd2 100%);
+    }
+    
+    .danger-modal .modal-header {
+        background: #dc3545;
+        color: white;
+        border-bottom: none;
+    }
+    
+    .danger-modal .modal-body {
+        text-align: center;
+        padding: 2rem;
+    }
+    
+    .danger-icon {
+        font-size: 4rem;
+        color: #dc3545;
+        animation: bounce 1s infinite;
+    }
+    
+    @keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+    }
+    
+    .severe-warning-modal .modal-content {
+        border: 3px solid #ff5722;
+        background: linear-gradient(135deg, #fff3e0 0%, #ffe0b2 100%);
+    }
+    
+    .severe-warning-modal .modal-header {
+        background: #ff5722;
+        color: white;
+        border-bottom: none;
+    }
+    
+    .severe-warning-modal .modal-body {
+        text-align: center;
+        padding: 2rem;
+    }
+    
+    .severe-icon {
+        font-size: 4rem;
+        color: #ff5722;
+        animation: shake 0.5s infinite;
+    }
+    
+    @keyframes shake {
+        0%, 100% { transform: rotate(0deg); }
+        25% { transform: rotate(-5deg); }
+        75% { transform: rotate(5deg); }
+    }
+</style>
+{% endblock %}
+
 {% block content %}
 <!-- Welcome Card -->
 <div class="card mb-4 bg-primary text-white">
@@ -40,8 +126,14 @@
         </div>
     </div>
     <div class="col-md-4">
-        <div class="stat-card {% if stats.violation_points > 50 %}danger{% else %}info{% endif %}">
-            <i class="bi bi-award-fill stat-icon"></i>
+        <div class="stat-card 
+            {% if stats.violation_points > 100 %}danger-high
+            {% elif stats.violation_points > 50 %}warning-medium
+            {% else %}info{% endif %}">
+            <i class="bi 
+                {% if stats.violation_points > 100 %}bi-radioactive stat-icon
+                {% elif stats.violation_points > 50 %}bi-exclamation-diamond-fill stat-icon
+                {% else %}bi-award-fill stat-icon{% endif %}"></i>
             <div class="stat-value">{{ stats.violation_points }}</div>
             <div class="stat-label">Total Poin</div>
         </div>
@@ -98,4 +190,176 @@
         </div>
     </div>
 </div>
+
+<!-- Danger Alert Modal (>100 points) -->
+<div class="modal fade" id="dangerModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content danger-modal">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold"><i class="bi bi-radioactive me-2"></i>TANDA BAHAYA!</h5>
+            </div>
+            <div class="modal-body">
+                <i class="bi bi-radioactive danger-icon mb-3"></i>
+                <h4 class="text-danger fw-bold mb-2">POIN PELANGGARAN ANDA SANGAT TINGGI!</h4>
+                <p class="text-muted mb-3">
+                    Total poin Anda: <span class="badge bg-danger fs-5">{{ stats.violation_points }}</span>
+                </p>
+                <p class="text-dark fw-bold">
+                    ⚠️ Segera perbaiki perilaku Anda! Risiko skorsing atau pemanggilan orang tua!
+                </p>
+                <button type="button" class="btn btn-danger btn-lg mt-3" onclick="acknowledgeDanger()">
+                    <i class="bi bi-check-circle me-2"></i>Saya Mengerti
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Severe Warning Modal (>100 points every 30 min) -->
+<div class="modal fade" id="severeWarningModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content severe-warning-modal">
+            <div class="modal-header">
+                <h5 class="modal-title fw-bold"><i class="bi bi-exclamation-octagon-fill me-2"></i>PERINGATAN KERAS!</h5>
+            </div>
+            <div class="modal-body">
+                <i class="bi bi-exclamation-octagon-fill severe-icon mb-3"></i>
+                <h4 class="text-warning fw-bold mb-2">PERINGATAN PENTING!</h4>
+                <p class="text-muted mb-3">
+                    Poin Anda: <span class="badge bg-warning text-dark fs-5">{{ stats.violation_points }}</span>
+                </p>
+                <p class="text-dark">
+                    🚨 Ini adalah peringatan keras! Anda berada dalam zona berbahaya.<br>
+                    Segera konsultasi dengan guru BK atau wali kelas!
+                </p>
+                <button type="button" class="btn btn-warning btn-lg mt-3 text-dark fw-bold" onclick="acknowledgeSevere()">
+                    <i class="bi bi-hand-thumbs-up me-2"></i>Saya Akan Perbaiki Diri
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    // Violation points from server
+    const violationPoints = {{ stats.violation_points|default(0) }};
+    
+    // Modal instances
+    let dangerModal = null;
+    let severeWarningModal = null;
+    
+    // Initialize modals if points > 100
+    if (violationPoints > 100) {
+        document.addEventListener('DOMContentLoaded', function() {
+            dangerModal = new bootstrap.Modal(document.getElementById('dangerModal'));
+            severeWarningModal = new bootstrap.Modal(document.getElementById('severeWarningModal'));
+            
+            // Show first danger alert immediately
+            setTimeout(() => {
+                showDangerAlert();
+            }, 2000);
+            
+            // Set intervals for recurring alerts
+            // Danger alert every 5 minutes (300000 ms)
+            setInterval(() => {
+                showDangerAlert();
+            }, 300000);
+            
+            // Severe warning every 30 minutes (1800000 ms)
+            setInterval(() => {
+                showSevereWarning();
+            }, 1800000);
+        });
+    }
+    
+    function showDangerAlert() {
+        if (dangerModal) {
+            dangerModal.show();
+            // Play alert sound if browser allows (optional)
+            playAlertSound('danger');
+        }
+    }
+    
+    function showSevereWarning() {
+        if (severeWarningModal) {
+            severeWarningModal.show();
+            playAlertSound('severe');
+        }
+    }
+    
+    function acknowledgeDanger() {
+        dangerModal.hide();
+    }
+    
+    function acknowledgeSevere() {
+        severeWarningModal.hide();
+    }
+    
+    // Optional: Play alert sound
+    function playAlertSound(type) {
+        try {
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            if (type === 'danger') {
+                // High pitch beeping for danger
+                oscillator.frequency.value = 800;
+                oscillator.type = 'square';
+                gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+                
+                // Beep pattern
+                oscillator.start();
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                oscillator.stop(audioContext.currentTime + 0.5);
+                
+                // Second beep
+                setTimeout(() => {
+                    const osc2 = audioContext.createOscillator();
+                    const gain2 = audioContext.createGain();
+                    osc2.connect(gain2);
+                    gain2.connect(audioContext.destination);
+                    osc2.frequency.value = 800;
+                    osc2.type = 'square';
+                    gain2.gain.setValueAtTime(0.3, audioContext.currentTime);
+                    osc2.start();
+                    gain2.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+                    osc2.stop(audioContext.currentTime + 0.5);
+                }, 600);
+                
+            } else {
+                // Lower pitch for warning
+                oscillator.frequency.value = 400;
+                oscillator.type = 'sawtooth';
+                gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+                oscillator.start();
+                gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 1);
+                oscillator.stop(audioContext.currentTime + 1);
+            }
+        } catch (e) {
+            console.log('Audio not supported or blocked');
+        }
+    }
+    
+    // Browser notification permission request (optional enhancement)
+    if (violationPoints > 100 && 'Notification' in window) {
+        Notification.requestPermission().then(permission => {
+            if (permission === 'granted') {
+                // Can show browser notifications
+                setInterval(() => {
+                    new Notification('🚨 SEOP - Tanda Bahaya!', {
+                        body: `Poin pelanggaran Anda: ${violationPoints}. Segera perbaiki perilaku!`,
+                        icon: '/static/img/danger-icon.png',
+                        requireInteraction: true
+                    });
+                }, 300000); // Every 5 minutes
+            }
+        });
+    }
+</script>
 {% endblock %}

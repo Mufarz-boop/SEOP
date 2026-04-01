@@ -3,108 +3,315 @@
 {% block title %}Buat Laporan - SEOP{% endblock %}
 {% block page_title %}Buat Laporan{% endblock %}
 
+{% block extra_css %}
+<style>
+    .report-container {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        padding: 2rem 0;
+    }
+    
+    .glass-card {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: 20px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        overflow: hidden;
+    }
+    
+    .card-header-custom {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 1.5rem 2rem;
+    }
+    
+    .form-group-custom {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-label-custom {
+        font-weight: 600;
+        color: #333;
+        margin-bottom: 0.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .form-control-custom {
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        transition: all 0.3s ease;
+    }
+    
+    .form-control-custom:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        transform: translateY(-2px);
+    }
+    
+    .file-upload-area {
+        border: 3px dashed #667eea;
+        border-radius: 15px;
+        padding: 2rem;
+        text-align: center;
+        background: #f8f9ff;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+    
+    .file-upload-area:hover {
+        background: #e8ecff;
+        border-color: #764ba2;
+    }
+    
+    .btn-submit {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+    
+    .btn-cancel {
+        border: 2px solid #6c757d;
+        color: #6c757d;
+        padding: 0.75rem 2rem;
+        border-radius: 50px;
+        font-weight: 600;
+        transition: all 0.3s ease;
+    }
+    
+    .btn-cancel:hover {
+        background: #6c757d;
+        color: white;
+    }
+    
+    .info-text {
+        color: #6c757d;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+</style>
+{% endblock %}
+
 {% block content %}
-<div class="row justify-content-center">
-    <div class="col-lg-8">
-        <div class="card">
-            <div class="card-header bg-primary text-white py-3">
-                <h5 class="mb-0"><i class="bi bi-file-earmark-plus-fill me-2"></i>Form Laporan</h5>
-            </div>
-            <div class="card-body p-4">
-                <form method="POST" action="{{ url_for('student.lapor') }}" enctype="multipart/form-data">
-                    <!-- Pihak yang Terlibat -->
-                    <div class="mb-4">
-                        <label class="form-label fw-bold">
-                            <i class="bi bi-person-fill me-2"></i>Pihak yang Terlibat <span class="text-danger">*</span>
-                        </label>
-                        <select name="student_id" class="form-select" required>
-                            <option value="">Pilih Murid</option>
-                            {% for s in students %}
-                            <option value="{{ s.student_id }}">{{ s.full_name }} ({{ s.nis }}) - {{ s.class_name or 'Tanpa Kelas' }}</option>
-                            {% endfor %}
-                        </select>
-                        <small class="text-muted">Pilih murid yang terlibat dalam kejadian</small>
+<div class="report-container">
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                
+                <!-- Main Card -->
+                <div class="glass-card">
+                    <div class="card-header-custom">
+                        <h4 class="mb-0 fw-bold">
+                            <i class="bi bi-file-earmark-plus-fill me-2"></i>
+                            Buat Laporan Baru
+                        </h4>
                     </div>
                     
-                    <!-- Kirim ke Admin -->
-                    <div class="mb-4">
-                        <label class="form-label fw-bold">
-                            <i class="bi bi-shield-fill me-2"></i>Kirim ke Admin <span class="text-danger">*</span>
-                        </label>
-                        <select name="admin_id" class="form-select" required>
-                            <option value="">Pilih Admin Tujuan</option>
-                            {% for admin in admins %}
-                            <option value="{{ admin.user_id }}">{{ admin.full_name }} {% if admin.position %}({{ admin.position }}){% endif %}</option>
-                            {% endfor %}
-                        </select>
-                        <small class="text-muted">Pilih admin yang akan menerima laporan ini</small>
+                    <div class="card-body p-4 p-md-5">
+                        <form method="POST" action="{{ url_for('.lapor') }}" enctype="multipart/form-data" id="reportForm">
+                            
+                            <!-- Pihak yang Terlibat -->
+                            <div class="form-group-custom">
+                                <label class="form-label-custom">
+                                    <i class="bi bi-person-fill text-primary"></i>
+                                    Pihak yang Terlibat <span class="text-danger">*</span>
+                                </label>
+                                <select name="student_id" class="form-control-custom form-select" required id="studentSelect">
+                                    <option value="">Pilih Murid</option>
+                                    {% for s in students %}
+                                    <option value="{{ s.student_id }}" data-class="{{ s.class_name or 'Tanpa Kelas' }}">
+                                        {{ s.full_name }} ({{ s.nis }})
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="info-text">
+                                    <i class="bi bi-info-circle me-1"></i>
+                                    Kelas: <span id="selectedClass" class="fw-bold text-primary">-</span>
+                                </div>
+                            </div>
+
+                            <!-- Kirim ke Admin -->
+                            <div class="form-group-custom">
+                                <label class="form-label-custom">
+                                    <i class="bi bi-shield-fill text-primary"></i>
+                                    Kirim ke Admin <span class="text-danger">*</span>
+                                </label>
+                                <select name="admin_id" class="form-control-custom form-select" required>
+                                    <option value="">Pilih Admin Tujuan</option>
+                                    {% for admin in admins %}
+                                    <option value="{{ admin.user_id }}">
+                                        {{ admin.full_name }} {% if admin.position %}({{ admin.position }}){% endif %}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+
+                            <!-- Judul Laporan -->
+                            <div class="form-group-custom">
+                                <label class="form-label-custom">
+                                    <i class="bi bi-chat-square-text-fill text-primary"></i>
+                                    Judul Laporan <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" name="title" class="form-control-custom form-control" placeholder="Masukkan judul laporan" required>
+                            </div>
+
+                            <!-- Kategori Pelanggaran -->
+                            <div class="form-group-custom">
+                                <label class="form-label-custom">
+                                    <i class="bi bi-tags-fill text-primary"></i>
+                                    Kategori Pelanggaran
+                                </label>
+                                <select name="violation_type_id" class="form-control-custom form-select" id="violationSelect">
+                                    <option value="">Pilih Kategori (Opsional)</option>
+                                    {% for vt in violation_types %}
+                                    <option value="{{ vt.id }}" data-points="{{ vt.points }}">
+                                        {{ vt.name }}
+                                    </option>
+                                    {% endfor %}
+                                </select>
+                                <div class="info-text">
+                                    <i class="bi bi-exclamation-triangle-fill me-1 text-warning"></i>
+                                    Poin: <span id="selectedPoints" class="fw-bold text-danger">-</span>
+                                </div>
+                            </div>
+
+                            <!-- Deskripsi -->
+                            <div class="form-group-custom">
+                                <label class="form-label-custom">
+                                    <i class="bi bi-file-text-fill text-primary"></i>
+                                    Deskripsi Kejadian <span class="text-danger">*</span>
+                                </label>
+                                <textarea name="description" class="form-control-custom form-control" rows="4" placeholder="Jelaskan detail kejadian..." required></textarea>
+                                <div class="info-text text-end">
+                                    <span id="charCount">0</span>/500 karakter
+                                </div>
+                            </div>
+
+                            <!-- Upload File -->
+                            <div class="form-group-custom">
+                                <label class="form-label-custom">
+                                    <i class="bi bi-paperclip text-primary"></i>
+                                    Lampiran (Opsional)
+                                </label>
+                                <div class="file-upload-area" onclick="document.getElementById('fileInput').click()">
+                                    <input type="file" name="evidence" id="fileInput" class="d-none" 
+                                           accept="image/*,video/*,audio/*,.pdf,.doc,.docx" onchange="handleFileSelect(this)">
+                                    <i class="bi bi-cloud-arrow-up-fill text-primary fs-2 mb-2" id="uploadIcon"></i>
+                                    <h6 class="text-primary mb-1" id="uploadText">Klik atau Drop File Disini</h6>
+                                    <small class="text-muted" id="fileName">JPG, PNG, MP4, PDF, DOC (Max 16MB)</small>
+                                </div>
+                            </div>
+
+                            <!-- Submit Buttons -->
+                            <div class="d-flex gap-3 justify-content-end mt-4">
+                                <a href="{{ url_for('teacher.dashboard') }}" class="btn btn-cancel">
+                                    <i class="bi bi-x-lg me-2"></i>Batal
+                                </a>
+                                <button type="submit" class="btn btn-submit text-white" id="submitBtn">
+                                    <i class="bi bi-send-fill me-2"></i>Kirim Laporan
+                                    <span class="spinner-border spinner-border-sm ms-2 d-none" id="loadingSpinner"></span>
+                                </button>
+                            </div>
+                        </form>
                     </div>
-                    
-                    <!-- Judul Laporan -->
-                    <div class="mb-4">
-                        <label class="form-label fw-bold">
-                            <i class="bi bi-chat-square-text-fill me-2"></i>Judul Laporan <span class="text-danger">*</span>
-                        </label>
-                        <input type="text" name="title" class="form-control" placeholder="Masukkan judul laporan" required>
+                </div>
+
+                <!-- Info Card -->
+                <div class="card mt-4 border-0 shadow-sm bg-white">
+                    <div class="card-body p-4">
+                        <div class="d-flex align-items-start">
+                            <i class="bi bi-info-circle-fill text-info fs-4 me-3 mt-1"></i>
+                            <div>
+                                <h6 class="fw-bold mb-2">Informasi Penting</h6>
+                                <ul class="mb-0 small text-muted ps-3">
+                                    <li>Laporan akan diteruskan ke admin yang dipilih untuk ditinjau</li>
+                                    <li>Pastikan data yang dimasukkan akurat dan dapat dipertanggungjawabkan</li>
+                                    <li>Lampiran bukti sangat disarankan untuk memperkuat laporan</li>
+                                </ul>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <!-- Kategori Pelanggaran -->
-                    <div class="mb-4">
-                        <label class="form-label fw-bold">
-                            <i class="bi bi-tags-fill me-2"></i>Kategori Pelanggaran
-                        </label>
-                        <select name="violation_type_id" class="form-select">
-                            <option value="">Pilih Kategori (Opsional)</option>
-                            {% for vt in violation_types %}
-                            <option value="{{ vt.id }}">{{ vt.name }} ({{ vt.points }} poin)</option>
-                            {% endfor %}
-                        </select>
-                    </div>
-                    
-                    <!-- Deskripsi -->
-                    <div class="mb-4">
-                        <label class="form-label fw-bold">
-                            <i class="bi bi-file-text-fill me-2"></i>Deskripsi Kejadian <span class="text-danger">*</span>
-                        </label>
-                        <textarea name="description" class="form-control" rows="5" placeholder="Jelaskan detail kejadian..." required></textarea>
-                    </div>
-                    
-                    <!-- Upload File -->
-                    <div class="mb-4">
-                        <label class="form-label fw-bold">
-                            <i class="bi bi-paperclip me-2"></i>Lampiran (Opsional)
-                        </label>
-                        <input type="file" name="evidence" class="form-control" accept="image/*,video/*,audio/*,.pdf,.doc,.docx">
-                        <small class="text-muted">
-                            Format yang diizinkan: JPG, PNG, GIF, MP4, MP3, WAV, PDF, DOC, DOCX (Max 16MB)
-                        </small>
-                    </div>
-                    
-                    <!-- Submit Buttons -->
-                    <div class="d-flex gap-2">
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-send-fill me-2"></i>Kirim Laporan
-                        </button>
-                        <a href="{{ url_for('student.dashboard') }}" class="btn btn-secondary">
-                            <i class="bi bi-x-lg me-2"></i>Batal
-                        </a>
-                    </div>
-                </form>
-            </div>
-        </div>
-        
-        <!-- Info Card -->
-        <div class="card mt-4 border-info">
-            <div class="card-body">
-                <h6 class="text-info"><i class="bi bi-info-circle-fill me-2"></i>Informasi</h6>
-                <ul class="mb-0 small text-muted">
-                    <li>Laporan yang Anda buat akan diteruskan ke admin yang Anda pilih</li>
-                    <li>Admin akan meninjau dan memutuskan status laporan (diterima/ditolak)</li>
-                    <li>Jika laporan diterima, poin pelanggaran akan ditambahkan ke murid yang bersangkutan</li>
-                    <li>Pastikan data yang Anda masukkan akurat dan dapat dipertanggungjawabkan</li>
-                </ul>
+                </div>
+
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    // Show selected class
+    document.getElementById('studentSelect').addEventListener('change', function() {
+        const selected = this.options[this.selectedIndex];
+        const className = selected.getAttribute('data-class');
+        document.getElementById('selectedClass').textContent = className || '-';
+    });
+
+    // Show violation points
+    document.getElementById('violationSelect').addEventListener('change', function() {
+        const selected = this.options[this.selectedIndex];
+        const points = selected.getAttribute('data-points');
+        document.getElementById('selectedPoints').textContent = points ? points + ' poin' : '-';
+    });
+
+    // Character count
+    document.querySelector('textarea[name="description"]').addEventListener('input', function() {
+        document.getElementById('charCount').textContent = this.value.length;
+    });
+
+    // File upload handler
+    function handleFileSelect(input) {
+        const fileName = input.files[0]?.name;
+        const uploadText = document.getElementById('uploadText');
+        const fileNameDisplay = document.getElementById('fileName');
+        const uploadIcon = document.getElementById('uploadIcon');
+        
+        if (fileName) {
+            uploadText.textContent = 'File Terpilih!';
+            fileNameDisplay.textContent = fileName;
+            uploadIcon.className = 'bi bi-check-circle-fill text-success fs-2 mb-2';
+        }
+    }
+
+    // Drag and drop
+    const dropZone = document.querySelector('.file-upload-area');
+    
+    dropZone.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        dropZone.style.background = '#e8ecff';
+    });
+    
+    dropZone.addEventListener('dragleave', (e) => {
+        e.preventDefault();
+        dropZone.style.background = '#f8f9ff';
+    });
+    
+    dropZone.addEventListener('drop', (e) => {
+        e.preventDefault();
+        const files = e.dataTransfer.files;
+        if (files.length) {
+            document.getElementById('fileInput').files = files;
+            handleFileSelect(document.getElementById('fileInput'));
+        }
+    });
+
+    // Form submission loading
+    document.getElementById('reportForm').addEventListener('submit', function(e) {
+        const btn = document.getElementById('submitBtn');
+        const spinner = document.getElementById('loadingSpinner');
+        
+        btn.disabled = true;
+        spinner.classList.remove('d-none');
+    });
+</script>
 {% endblock %}
