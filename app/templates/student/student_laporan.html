@@ -100,6 +100,144 @@
         font-size: 0.875rem;
         margin-top: 0.25rem;
     }
+
+    /* Custom Searchable Select Styles */
+    .searchable-select-wrapper {
+        position: relative;
+    }
+    
+    .searchable-select-input {
+        width: 100%;
+        border: 2px solid #e0e0e0;
+        border-radius: 12px;
+        padding: 0.75rem 1rem;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background: white;
+        cursor: pointer;
+    }
+    
+    .searchable-select-input:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+        transform: translateY(-2px);
+        outline: none;
+    }
+    
+    .searchable-dropdown {
+        position: absolute;
+        top: 100%;
+        left: 0;
+        right: 0;
+        background: white;
+        border: 2px solid #667eea;
+        border-radius: 12px;
+        margin-top: 5px;
+        max-height: 300px;
+        overflow-y: auto;
+        z-index: 1000;
+        box-shadow: 0 8px 32px rgba(31, 38, 135, 0.2);
+        display: none;
+    }
+    
+    .searchable-dropdown.active {
+        display: block;
+    }
+    
+    .search-box {
+        padding: 0.75rem;
+        border-bottom: 1px solid #e0e0e0;
+        position: sticky;
+        top: 0;
+        background: white;
+        border-radius: 10px 10px 0 0;
+    }
+    
+    .search-box input {
+        width: 100%;
+        border: 1px solid #e0e0e0;
+        border-radius: 8px;
+        padding: 0.5rem 0.75rem;
+        font-size: 0.9rem;
+    }
+    
+    .search-box input:focus {
+        border-color: #667eea;
+        outline: none;
+    }
+    
+    .options-list {
+        list-style: none;
+        margin: 0;
+        padding: 0;
+    }
+    
+    .option-item {
+        padding: 0.75rem 1rem;
+        cursor: pointer;
+        border-bottom: 1px solid #f0f0f0;
+        transition: all 0.2s ease;
+    }
+    
+    .option-item:hover,
+    .option-item.selected {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+    
+    .option-item.hidden {
+        display: none;
+    }
+    
+    .option-item.no-results {
+        text-align: center;
+        color: #6c757d;
+        cursor: default;
+        background: #f8f9fa;
+    }
+    
+    .option-item.no-results:hover {
+        background: #f8f9fa;
+        color: #6c757d;
+    }
+    
+    .option-text {
+        font-weight: 500;
+    }
+    
+    .option-subtext {
+        font-size: 0.8rem;
+        opacity: 0.8;
+    }
+    
+    .select-arrow {
+        position: absolute;
+        right: 1rem;
+        top: 50%;
+        transform: translateY(-50%);
+        pointer-events: none;
+        color: #667eea;
+        transition: transform 0.3s ease;
+    }
+    
+    .searchable-select-wrapper.active .select-arrow {
+        transform: translateY(-50%) rotate(180deg);
+    }
+    
+    .clear-selection {
+        position: absolute;
+        right: 2.5rem;
+        top: 50%;
+        transform: translateY(-50%);
+        cursor: pointer;
+        color: #dc3545;
+        display: none;
+        font-size: 1.2rem;
+    }
+    
+    .searchable-select-wrapper.has-value .clear-selection {
+        display: block;
+    }
 </style>
 {% endblock %}
 
@@ -119,7 +257,7 @@
                     </div>
                     
                     <div class="card-body p-4 p-md-5">
-                        <form method="POST" action="{{ url_for('.lapor') }}" enctype="multipart/form-data" id="reportForm">
+                        <form method="POST" action="{{ url_for('student.lapor') }}" enctype="multipart/form-data" id="reportForm">
                             
                             <!-- Pihak yang Terlibat -->
                             <div class="form-group-custom">
@@ -127,14 +265,40 @@
                                     <i class="bi bi-person-fill text-primary"></i>
                                     Pihak yang Terlibat <span class="text-danger">*</span>
                                 </label>
-                                <select name="student_id" class="form-control-custom form-select" required id="studentSelect">
-                                    <option value="">Pilih Murid</option>
-                                    {% for s in students %}
-                                    <option value="{{ s.student_id }}" data-class="{{ s.class_name or 'Tanpa Kelas' }}">
-                                        {{ s.full_name }} ({{ s.nis }})
-                                    </option>
-                                    {% endfor %}
-                                </select>
+                                
+                                <!-- Custom Searchable Select -->
+                                <div class="searchable-select-wrapper" id="studentSelectWrapper">
+                                    <input type="hidden" name="student_id" id="studentIdInput" required>
+                                    <input type="text" 
+                                           class="searchable-select-input" 
+                                           id="studentDisplayInput" 
+                                           placeholder="Ketik untuk mencari murid..." 
+                                           readonly 
+                                           autocomplete="off">
+                                    <i class="bi bi-chevron-down select-arrow"></i>
+                                    <i class="bi bi-x-circle-fill clear-selection" id="clearStudent"></i>
+                                    
+                                    <div class="searchable-dropdown" id="studentDropdown">
+                                        <div class="search-box">
+                                            <input type="text" 
+                                                   id="studentSearchInput" 
+                                                   placeholder="Cari nama atau NIS..." 
+                                                   autocomplete="off">
+                                        </div>
+                                        <ul class="options-list" id="studentOptionsList">
+                                            {% for s in students %}
+                                            <li class="option-item" 
+                                                data-value="{{ s.student_id }}" 
+                                                data-class="{{ s.class_name or 'Tanpa Kelas' }}"
+                                                data-search="{{ s.full_name|lower }} {{ s.nis|lower }}">
+                                                <div class="option-text">{{ s.full_name }} ({{ s.nis }})</div>
+                                                <div class="option-subtext">Kelas: {{ s.class_name or 'Tanpa Kelas' }}</div>
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                                
                                 <div class="info-text">
                                     <i class="bi bi-info-circle me-1"></i>
                                     Kelas: <span id="selectedClass" class="fw-bold text-primary">-</span>
@@ -250,12 +414,160 @@
 </div>
 
 <script>
-    // Show selected class
-    document.getElementById('studentSelect').addEventListener('change', function() {
-        const selected = this.options[this.selectedIndex];
-        const className = selected.getAttribute('data-class');
-        document.getElementById('selectedClass').textContent = className || '-';
-    });
+    // Custom Searchable Select Functionality
+    (function() {
+        const wrapper = document.getElementById('studentSelectWrapper');
+        const displayInput = document.getElementById('studentDisplayInput');
+        const hiddenInput = document.getElementById('studentIdInput');
+        const dropdown = document.getElementById('studentDropdown');
+        const searchInput = document.getElementById('studentSearchInput');
+        const optionsList = document.getElementById('studentOptionsList');
+        const options = optionsList.querySelectorAll('.option-item');
+        const clearBtn = document.getElementById('clearStudent');
+        const classDisplay = document.getElementById('selectedClass');
+        
+        let isOpen = false;
+        
+        // Toggle dropdown
+        function toggleDropdown() {
+            isOpen = !isOpen;
+            dropdown.classList.toggle('active', isOpen);
+            wrapper.classList.toggle('active', isOpen);
+            if (isOpen) {
+                searchInput.focus();
+                searchInput.value = '';
+                filterOptions('');
+            }
+        }
+        
+        // Close dropdown
+        function closeDropdown() {
+            isOpen = false;
+            dropdown.classList.remove('active');
+            wrapper.classList.remove('active');
+        }
+        
+        // Select option
+        function selectOption(option) {
+            const value = option.getAttribute('data-value');
+            const text = option.querySelector('.option-text').textContent;
+            const className = option.getAttribute('data-class');
+            
+            hiddenInput.value = value;
+            displayInput.value = text;
+            classDisplay.textContent = className || '-';
+            
+            // Mark as selected
+            options.forEach(opt => opt.classList.remove('selected'));
+            option.classList.add('selected');
+            
+            wrapper.classList.add('has-value');
+            closeDropdown();
+        }
+        
+        // Clear selection
+        function clearSelection() {
+            hiddenInput.value = '';
+            displayInput.value = '';
+            classDisplay.textContent = '-';
+            wrapper.classList.remove('has-value');
+            options.forEach(opt => opt.classList.remove('selected'));
+        }
+        
+        // Filter options
+        function filterOptions(searchTerm) {
+            const term = searchTerm.toLowerCase();
+            let hasResults = false;
+            
+            options.forEach(option => {
+                const searchData = option.getAttribute('data-search');
+                const text = option.textContent.toLowerCase();
+                
+                if (searchData.includes(term) || text.includes(term)) {
+                    option.classList.remove('hidden');
+                    hasResults = true;
+                } else {
+                    option.classList.add('hidden');
+                }
+            });
+            
+            // Show/hide no results message
+            const existingNoResults = optionsList.querySelector('.no-results');
+            if (existingNoResults) {
+                existingNoResults.remove();
+            }
+            
+            if (!hasResults) {
+                const noResults = document.createElement('li');
+                noResults.className = 'option-item no-results';
+                noResults.textContent = 'Murid tidak ditemukan';
+                optionsList.appendChild(noResults);
+            }
+        }
+        
+        // Event listeners
+        displayInput.addEventListener('click', function(e) {
+            e.stopPropagation();
+            toggleDropdown();
+        });
+        
+        clearBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            clearSelection();
+        });
+        
+        searchInput.addEventListener('input', function() {
+            filterOptions(this.value);
+        });
+        
+        searchInput.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+        
+        options.forEach(option => {
+            option.addEventListener('click', function() {
+                selectOption(this);
+            });
+        });
+        
+        // Close when clicking outside
+        document.addEventListener('click', function(e) {
+            if (!wrapper.contains(e.target)) {
+                closeDropdown();
+            }
+        });
+        
+        // Keyboard navigation
+        searchInput.addEventListener('keydown', function(e) {
+            const visibleOptions = Array.from(options).filter(opt => !opt.classList.contains('hidden') && !opt.classList.contains('no-results'));
+            const currentIndex = visibleOptions.findIndex(opt => opt.classList.contains('selected'));
+            
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (currentIndex < visibleOptions.length - 1) {
+                    if (currentIndex >= 0) visibleOptions[currentIndex].classList.remove('selected');
+                    visibleOptions[currentIndex + 1].classList.add('selected');
+                    visibleOptions[currentIndex + 1].scrollIntoView({ block: 'nearest' });
+                }
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (currentIndex > 0) {
+                    visibleOptions[currentIndex].classList.remove('selected');
+                    visibleOptions[currentIndex - 1].classList.add('selected');
+                    visibleOptions[currentIndex - 1].scrollIntoView({ block: 'nearest' });
+                }
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                const selected = visibleOptions.find(opt => opt.classList.contains('selected'));
+                if (selected) {
+                    selectOption(selected);
+                }
+            } else if (e.key === 'Escape') {
+                closeDropdown();
+                displayInput.focus();
+            }
+        });
+    })();
 
     // Show violation points
     document.getElementById('violationSelect').addEventListener('change', function() {
