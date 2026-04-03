@@ -84,8 +84,6 @@
                         <tr>
                             <th>No</th>
                             <th>Judul</th>
-                            <th>Pelapor</th>
-                            <th>Murid Terlibat</th>
                             <th>Status</th>
                             <th>Tanggal</th>
                             <th>Aksi</th>
@@ -96,10 +94,6 @@
                         <tr>
                             <td>{{ loop.index }}</td>
                             <td>{{ report.title }}</td>
-                            <td>
-                                <span class="badge bg-secondary">{{ report.reporter_role }}</span>
-                            </td>
-                            <td>{{ report.student_nis or '-' }}</td>
                             <td>
                                 <span class="badge status-{{ report.status }}">
                                     {{ report.status|upper }}

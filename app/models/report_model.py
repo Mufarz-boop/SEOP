@@ -103,7 +103,7 @@ class ReportModel:
         stats['rejected'] = execute_query(
             "SELECT COUNT(*) as count FROM reports WHERE status = 'rejected'", fetch_one=True
         )['count']
-        
+
         # Reports by role
         query = """
             SELECT u.role, COUNT(*) as count

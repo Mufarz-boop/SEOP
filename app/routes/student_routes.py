@@ -1,7 +1,7 @@
-from flask import Blueprint, render_template, request, redirect, url_for, flash, session, current_app
+from flask import Blueprint, jsonify, render_template, request, redirect, url_for, flash, session, current_app
 import os
 from werkzeug.utils import secure_filename
-from app.utils.role_required import student_required
+from app.utils.role_required import login_required, student_required
 from app.utils.auth_helper import allowed_file
 from app.models.user_model import UserModel
 from app.models.student_model import StudentModel

@@ -255,7 +255,7 @@
         {% endif %}
         
         <div style="margin-top: 50px; padding-top: 20px; border-top: 1px solid #bdc3c7; text-align: center; color: #7f8c8d; font-size: 12px;">
-            <p>Dokumen ini dicetak secara otomatis dari sistem SEOP</p>
+            <p>Dokumen ini dicetak dari sistem SEOP</p>
             <p>Tanggal Cetak: {{ report.created_at.strftime('%d/%m/%Y %H:%M') if report.created_at else '-' }}</p>
         </div>
     </div>
@@ -503,7 +503,7 @@ function printAllReports() {
     printWindow.document.write(`
         <html>
         <head>
-            <title>Print Semua Laporan - SEOP</title>
+            <title>SCHOOL ORDER ENVIRONMENT PROGRAM</title>
             <style>
                 body { font-family: Arial, sans-serif; margin: 20px; }
                 @media print {
@@ -517,14 +517,14 @@ function printAllReports() {
                 <h3 style="margin: 0 0 10px 0;">📋 Print Semua Laporan</h3>
                 <p style="margin: 0 0 15px 0;">Total: {{ reports|length }} laporan | Tanggal: ${currentDate}</p>
                 <button onclick="window.print()" style="padding: 12px 30px; font-size: 16px; cursor: pointer; background: white; color: #3498db; border: none; border-radius: 5px; font-weight: bold;">
-                    🖨️ Print Sekarang
+                    🖨️ Print
                 </button>
                 <button onclick="window.close()" style="padding: 12px 30px; font-size: 16px; cursor: pointer; background: #e74c3c; color: white; border: none; border-radius: 5px; margin-left: 10px;">
                     ❌ Tutup
                 </button>
             </div>
             <div style="text-align: center; margin-bottom: 30px; border-bottom: 3px solid #2c3e50; padding-bottom: 20px;">
-                <h1 style="color: #2c3e50; margin: 0;">LAPORAN PENGGUNA SEOP</h1>
+                <h1 style="color: #2c3e50; margin: 0;">LAPORAN PENGGUNA</h1>
                 <p style="color: #7f8c8d; margin: 10px 0;">Ringkasan Semua Laporan</p>
                 <p style="color: #95a5a6; font-size: 14px;">Dicetak pada: ${currentDate}</p>
             </div>
