@@ -111,16 +111,6 @@ seop/
 └── README.md                  # This file
 ```
 
-## Default Login
-
-Setelah import database, Anda dapat login dengan akun berikut:
-
-| Role | Nomor Registrasi | Password |
-|------|-----------------|----------|
-| Admin | AMN1998122320250001 | admin123 |
-| Teacher | TCR1993122400020000 | teacher123 |
-| Student | SDT19861226000000000003 | student123 |
-
 ## Fitur Keamanan
 
 - Password hashing menggunakan bcrypt

@@ -336,14 +336,40 @@
                                     <i class="bi bi-tags-fill text-primary"></i>
                                     Kategori Pelanggaran
                                 </label>
-                                <select name="violation_type_id" class="form-control-custom form-select" id="violationSelect">
-                                    <option value="">Pilih Kategori (Opsional)</option>
-                                    {% for vt in violation_types %}
-                                    <option value="{{ vt.id }}" data-points="{{ vt.points }}">
-                                        {{ vt.name }}
-                                    </option>
-                                    {% endfor %}
-                                </select>
+                                
+                                <!-- Custom Searchable Select untuk Pelanggaran -->
+                                <div class="searchable-select-wrapper" id="violationSelectWrapper">
+                                    <input type="hidden" name="violation_type_id" id="violationIdInput">
+                                    <input type="text" 
+                                        class="searchable-select-input" 
+                                        id="violationDisplayInput" 
+                                        placeholder="Ketik untuk mencari kategori..." 
+                                        readonly 
+                                        autocomplete="off">
+                                    <i class="bi bi-chevron-down select-arrow"></i>
+                                    <i class="bi bi-x-circle-fill clear-selection" id="clearViolation"></i>
+                                    
+                                    <div class="searchable-dropdown" id="violationDropdown">
+                                        <div class="search-box">
+                                            <input type="text" 
+                                                id="violationSearchInput" 
+                                                placeholder="Cari kategori pelanggaran..." 
+                                                autocomplete="off">
+                                        </div>
+                                        <ul class="options-list" id="violationOptionsList">
+                                            {% for vt in violation_types %}
+                                            <li class="option-item" 
+                                                data-value="{{ vt.id }}" 
+                                                data-points="{{ vt.points }}"
+                                                data-search="{{ vt.name|lower }}">
+                                                <div class="option-text">{{ vt.name }}</div>
+                                                <div class="option-subtext">{{ vt.points }} poin</div>
+                                            </li>
+                                            {% endfor %}
+                                        </ul>
+                                    </div>
+                                </div>
+                                
                                 <div class="info-text">
                                     <i class="bi bi-exclamation-triangle-fill me-1 text-warning"></i>
                                     Poin: <span id="selectedPoints" class="fw-bold text-danger">-</span>
@@ -362,24 +388,9 @@
                                 </div>
                             </div>
 
-                            <!-- Upload File -->
-                            <div class="form-group-custom">
-                                <label class="form-label-custom">
-                                    <i class="bi bi-paperclip text-primary"></i>
-                                    Lampiran (Opsional)
-                                </label>
-                                <div class="file-upload-area" onclick="document.getElementById('fileInput').click()">
-                                    <input type="file" name="evidence" id="fileInput" class="d-none" 
-                                           accept="image/*,video/*,audio/*,.pdf,.doc,.docx" onchange="handleFileSelect(this)">
-                                    <i class="bi bi-cloud-arrow-up-fill text-primary fs-2 mb-2" id="uploadIcon"></i>
-                                    <h6 class="text-primary mb-1" id="uploadText">Klik atau Drop File Disini</h6>
-                                    <small class="text-muted" id="fileName">JPG, PNG, MP4, PDF, DOC (Max 16MB)</small>
-                                </div>
-                            </div>
-
                             <!-- Submit Buttons -->
                             <div class="d-flex gap-3 justify-content-end mt-4">
-                                <a href="{{ url_for('teacher.dashboard') }}" class="btn btn-cancel">
+                                <a href="{{ url_for('student.dashboard') }}" class="btn btn-cancel">
                                     <i class="bi bi-x-lg me-2"></i>Batal
                                 </a>
                                 <button type="submit" class="btn btn-submit text-white" id="submitBtn">
@@ -414,7 +425,9 @@
 </div>
 
 <script>
-    // Custom Searchable Select Functionality
+    // ============================================
+    // CUSTOM SEARCHABLE SELECT - STUDENT (Pihak Terlibat)
+    // ============================================
     (function() {
         const wrapper = document.getElementById('studentSelectWrapper');
         const displayInput = document.getElementById('studentDisplayInput');
@@ -569,19 +582,163 @@
         });
     })();
 
-    // Show violation points
-    document.getElementById('violationSelect').addEventListener('change', function() {
-        const selected = this.options[this.selectedIndex];
-        const points = selected.getAttribute('data-points');
-        document.getElementById('selectedPoints').textContent = points ? points + ' poin' : '-';
-    });
+    // ============================================
+    // CUSTOM SEARCHABLE SELECT - VIOLATION (Kategori Pelanggaran)
+    // ============================================
+    (function() {
+        const wrapper = document.getElementById('violationSelectWrapper');
+        const displayInput = document.getElementById('violationDisplayInput');
+        const hiddenInput = document.getElementById('violationIdInput');
+        const dropdown = document.getElementById('violationDropdown');
+        const searchInput = document.getElementById('violationSearchInput');
+        const optionsList = document.getElementById('violationOptionsList');
+        const options = optionsList.querySelectorAll('.option-item');
+        const clearBtn = document.getElementById('clearViolation');
+        const pointsDisplay = document.getElementById('selectedPoints');
+        
+        let isOpen = false;
+        
+        function toggleDropdown() {
+            isOpen = !isOpen;
+            dropdown.classList.toggle('active', isOpen);
+            wrapper.classList.toggle('active', isOpen);
+            if (isOpen) {
+                searchInput.focus();
+                searchInput.value = '';
+                filterOptions('');
+            }
+        }
+        
+        function closeDropdown() {
+            isOpen = false;
+            dropdown.classList.remove('active');
+            wrapper.classList.remove('active');
+        }
+        
+        function selectOption(option) {
+            const value = option.getAttribute('data-value');
+            const text = option.querySelector('.option-text').textContent;
+            const points = option.getAttribute('data-points');
+            
+            hiddenInput.value = value;
+            displayInput.value = text;
+            pointsDisplay.textContent = points ? points + ' poin' : '-';
+            
+            options.forEach(opt => opt.classList.remove('selected'));
+            option.classList.add('selected');
+            
+            wrapper.classList.add('has-value');
+            closeDropdown();
+        }
+        
+        function clearSelection() {
+            hiddenInput.value = '';
+            displayInput.value = '';
+            pointsDisplay.textContent = '-';
+            wrapper.classList.remove('has-value');
+            options.forEach(opt => opt.classList.remove('selected'));
+        }
+        
+        function filterOptions(searchTerm) {
+            const term = searchTerm.toLowerCase();
+            let hasResults = false;
+            
+            options.forEach(option => {
+                const searchData = option.getAttribute('data-search');
+                const text = option.textContent.toLowerCase();
+                
+                if (searchData.includes(term) || text.includes(term)) {
+                    option.classList.remove('hidden');
+                    hasResults = true;
+                } else {
+                    option.classList.add('hidden');
+                }
+            });
+            
+            const existingNoResults = optionsList.querySelector('.no-results');
+            if (existingNoResults) {
+                existingNoResults.remove();
+            }
+            
+            if (!hasResults) {
+                const noResults = document.createElement('li');
+                noResults.className = 'option-item no-results';
+                noResults.textContent = 'Kategori tidak ditemukan';
+                optionsList.appendChild(noResults);
+            }
+        }
+        
+        displayInput.addEventListener('click', function(e) {
+            e.stopPropagation();
+            toggleDropdown();
+        });
+        
+        clearBtn.addEventListener('click', function(e) {
+            e.stopPropagation();
+            clearSelection();
+        });
+        
+        searchInput.addEventListener('input', function() {
+            filterOptions(this.value);
+        });
+        
+        searchInput.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+        
+        options.forEach(option => {
+            option.addEventListener('click', function() {
+                selectOption(this);
+            });
+        });
+        
+        document.addEventListener('click', function(e) {
+            if (!wrapper.contains(e.target)) {
+                closeDropdown();
+            }
+        });
+        
+        searchInput.addEventListener('keydown', function(e) {
+            const visibleOptions = Array.from(options).filter(opt => !opt.classList.contains('hidden') && !opt.classList.contains('no-results'));
+            const currentIndex = visibleOptions.findIndex(opt => opt.classList.contains('selected'));
+            
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (currentIndex < visibleOptions.length - 1) {
+                    if (currentIndex >= 0) visibleOptions[currentIndex].classList.remove('selected');
+                    visibleOptions[currentIndex + 1].classList.add('selected');
+                    visibleOptions[currentIndex + 1].scrollIntoView({ block: 'nearest' });
+                }
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (currentIndex > 0) {
+                    visibleOptions[currentIndex].classList.remove('selected');
+                    visibleOptions[currentIndex - 1].classList.add('selected');
+                    visibleOptions[currentIndex - 1].scrollIntoView({ block: 'nearest' });
+                }
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                const selected = visibleOptions.find(opt => opt.classList.contains('selected'));
+                if (selected) {
+                    selectOption(selected);
+                }
+            } else if (e.key === 'Escape') {
+                closeDropdown();
+                displayInput.focus();
+            }
+        });
+    })();
 
-    // Character count
+    // ============================================
+    // CHARACTER COUNT - Deskripsi
+    // ============================================
     document.querySelector('textarea[name="description"]').addEventListener('input', function() {
         document.getElementById('charCount').textContent = this.value.length;
     });
 
-    // File upload handler
+    // ============================================
+    // FILE UPLOAD HANDLER
+    // ============================================
     function handleFileSelect(input) {
         const fileName = input.files[0]?.name;
         const uploadText = document.getElementById('uploadText');
@@ -595,29 +752,35 @@
         }
     }
 
-    // Drag and drop
+    // ============================================
+    // DRAG AND DROP
+    // ============================================
     const dropZone = document.querySelector('.file-upload-area');
     
-    dropZone.addEventListener('dragover', (e) => {
-        e.preventDefault();
-        dropZone.style.background = '#e8ecff';
-    });
-    
-    dropZone.addEventListener('dragleave', (e) => {
-        e.preventDefault();
-        dropZone.style.background = '#f8f9ff';
-    });
-    
-    dropZone.addEventListener('drop', (e) => {
-        e.preventDefault();
-        const files = e.dataTransfer.files;
-        if (files.length) {
-            document.getElementById('fileInput').files = files;
-            handleFileSelect(document.getElementById('fileInput'));
-        }
-    });
+    if (dropZone) {
+        dropZone.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            dropZone.style.background = '#e8ecff';
+        });
+        
+        dropZone.addEventListener('dragleave', (e) => {
+            e.preventDefault();
+            dropZone.style.background = '#f8f9ff';
+        });
+        
+        dropZone.addEventListener('drop', (e) => {
+            e.preventDefault();
+            const files = e.dataTransfer.files;
+            if (files.length) {
+                document.getElementById('fileInput').files = files;
+                handleFileSelect(document.getElementById('fileInput'));
+            }
+        });
+    }
 
-    // Form submission loading
+    // ============================================
+    // FORM SUBMISSION LOADING
+    // ============================================
     document.getElementById('reportForm').addEventListener('submit', function(e) {
         const btn = document.getElementById('submitBtn');
         const spinner = document.getElementById('loadingSpinner');
